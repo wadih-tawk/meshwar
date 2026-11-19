@@ -19,4 +19,6 @@ const outingSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+outingSchema.index({ userId: 1, date: 1 });
+
 export default mongoose.model('Outing', outingSchema);
