@@ -807,6 +807,12 @@ textarea {
   color: var(--muted);
 }
 
+.results mark {
+  background: var(--gold);
+  color: inherit;
+  border-radius: 3px;
+}
+
 .form-actions {
   display: flex;
   flex-wrap: wrap;

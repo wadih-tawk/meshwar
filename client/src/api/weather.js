@@ -17,9 +17,12 @@ async function getJSON(url) {
 }
 
 export async function searchPlaces(name) {
-  const params = new URLSearchParams({ name, count: 5, language: 'en', format: 'json' });
-  const data = await getJSON(`${GEO_URL}?${params}`);
-  return (data.results ?? []).map(place => ({
+  const inLebanon = new URLSearchParams({ name, count: 4, language: 'en', format: 'json', countryCode: 'LB' });
+  const everywhere = new URLSearchParams({ name, count: 5, language: 'en', format: 'json' });
+  const [local, world] = await Promise.all([getJSON(`${GEO_URL}?${inLebanon}`), getJSON(`${GEO_URL}?${everywhere}`)]);
+  const all = [...(local.results ?? []), ...(world.results ?? [])];
+  const unique = all.filter((place, index) => all.findIndex(other => other.id === place.id) === index);
+  return unique.slice(0, 7).map(place => ({
     id: place.id,
     name: place.name,
     region: place.admin1 ?? '',
