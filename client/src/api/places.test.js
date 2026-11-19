@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { cleanExtract, isNear, isSight, pickNearby } from './places.js';
+import { describe, it, expect, vi } from 'vitest';
+import { cleanExtract, getPlaceSummary, isNear, isSight, pickNearby } from './places.js';
 
 describe('isNear', () => {
   it('accepts an article close to the outing', () => {
@@ -53,5 +53,20 @@ describe('cleanExtract', () => {
 
   it('leaves text without early brackets alone', () => {
     expect(cleanExtract('Faqra is a ski resort.')).toBe('Faqra is a ski resort.');
+  });
+});
+
+describe('getPlaceSummary', () => {
+  it('asks Wikipedia only once for the same place', async () => {
+    const page = { pageid: 1, title: 'Batroun', description: 'City in Lebanon', extract: 'Batroun is a city.', coordinates: [{ lat: 34.25, lon: 35.66 }] };
+    const fakeFetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({ query: { pages: [page] } }) }));
+    vi.stubGlobal('fetch', fakeFetch);
+    const place = { name: 'Batroun', country: 'Lebanon', lat: 34.25, lon: 35.66 };
+    const first = await getPlaceSummary(place);
+    const second = await getPlaceSummary(place);
+    expect(first.title).toBe('Batroun');
+    expect(second).toBe(first);
+    expect(fakeFetch).toHaveBeenCalledTimes(1);
+    vi.unstubAllGlobals();
   });
 });

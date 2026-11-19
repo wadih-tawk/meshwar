@@ -1,5 +1,6 @@
 const WIKI_URL = 'https://en.wikipedia.org/w/api.php';
 const NEAR = 0.3;
+const summaries = {};
 const SIGHTS = ['mosque', 'church', 'cathedral', 'monastery', 'temple', 'castle', 'citadel', 'fortress', 'tower', 'palace', 'mansion', 'museum', 'garden', 'park', 'reserve', 'forest', 'valley', 'mountain', 'lake', 'river', 'waterfall', 'beach', 'bay', 'island', 'cave', 'grotto', 'dam', 'ski', 'resort', 'square', 'market', 'souk', 'site', 'ruins', 'necropolis', 'monument', 'bridge', 'heritage'];
 
 async function getJSON(url) {
@@ -60,6 +61,10 @@ export function isNear(page, lat, lon) {
 }
 
 export async function getPlaceSummary(place) {
+  const key = `${place.name}|${place.country}|${place.lat}|${place.lon}`;
+  if (key in summaries) {
+    return summaries[key];
+  }
   const params = wikiParams({
     generator: 'search',
     gsrsearch: `${place.name} ${place.country}`,
@@ -73,10 +78,9 @@ export async function getPlaceSummary(place) {
   });
   const data = await getJSON(`${WIKI_URL}?${params}`);
   const pages = data.query ? data.query.pages : [];
-  if (pages.length === 0 || !isNear(pages[0], place.lat, place.lon)) {
-    return null;
-  }
-  return toPlace(pages[0]);
+  const summary = pages.length > 0 && isNear(pages[0], place.lat, place.lon) ? toPlace(pages[0]) : null;
+  summaries[key] = summary;
+  return summary;
 }
 
 export async function getNearbyPlaces(place) {

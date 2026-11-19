@@ -15,6 +15,10 @@ A weather-aware outing planner for students in Lebanon. Save a hike, a beach day
 - Create an outing: title, activity (hike, beach, ski, picnic, city, other), date, notes, and a place searched by name. The user picks the right match from a list, because "Tripoli" returns Libya first and Lebanon second.
 - **My outings:** only your own outings, upcoming ones sorted by date, past ones in their own section.
 - **Outing page:** that day's forecast (min and max °C, rain chance, wind) and the verdict. The forecast covers today and the next 14 days; later dates show "Forecast available from <date>". If the weather service has not finished a day's forecast, the app says so instead of guessing a verdict.
+- **Photos and place info:** every outing shows a photo of its place and a short "About" text from Wikipedia, plus up to four sights nearby to explore (castles, temples, ski areas, valleys…). When Wikipedia has no photo, the app shows a photo for the activity.
+- **Packing checklist** on each outing: items for the activity, plus a warm jacket when it will be cold and an umbrella when rain is likely. Ticked items are remembered in the browser.
+- **Filter My outings by activity** (hike, beach, ski, picnic, city).
+- The forecast shows a weather icon and label ("Partly cloudy", "Rain"…).
 - Edit and delete your own outings, with a confirm step before deleting.
 - Protection: outing pages redirect to the login page without a token. The API answers 401 without a valid token and 404 for someone else's outing.
 - Responsive layout for phone and desktop.
@@ -30,7 +34,7 @@ A weather-aware outing planner for students in Lebanon. Save a hike, a beach day
 | Database | MongoDB Atlas with Mongoose (collections `users` and `outings`) |
 | Authentication | bcrypt password hashes, JWT (1 hour) sent as `Authorization: Bearer`, `requireAuth` middleware |
 | Validation and security | zod schemas on every request body, `helmet`, CORS limited to the client URL, rate limits (login: 5 failed tries per 15 minutes), 10 kB body limit, `sanitizeFilter` |
-| Third-party API | Open-Meteo Geocoding and Forecast (free, no API key) |
+| Third-party APIs | Open-Meteo Geocoding and Forecast; Wikipedia (MediaWiki API) for place photos, descriptions and nearby sights. Both are free and need no API key |
 | Tests | Vitest + Supertest (back end), Vitest + React Testing Library (front end) |
 | Hosting | API on Render, client on Vercel, database on Atlas |
 
@@ -43,6 +47,7 @@ flowchart LR
     AC["AuthContext: token"]
     AF["api/client.js: apiFetch"]
     W["api/weather.js"]
+    PL["api/places.js"]
   end
   subgraph S["Express API"]
     MW["helmet, cors, json, rate limit"]
@@ -53,17 +58,20 @@ flowchart LR
   end
   DB[("MongoDB Atlas")]
   OM["Open-Meteo"]
+  WP["Wikipedia"]
 
   P --> AC
   P --> AF
   P --> W
+  P --> PL
   AF -- "JSON + Bearer token" --> MW --> R --> RA --> V --> M --> DB
   W -- "no token" --> OM
+  PL -- "no token" --> WP
 ```
 
 The app is three programs. The **React app** runs in the browser, draws the screens and keeps the token. The **Express API** is the only program that knows the database password and the token secret, so it is the only one that talks to MongoDB. **MongoDB Atlas** stores users and outings.
 
-The browser talks to two places through two separate files: `apiFetch` for our API (it adds the token to every request) and `weather.js` for Open-Meteo (it never sends our token to another company). The forecast is not stored: it changes every day, so it is fetched live from the outing's saved latitude, longitude and date.
+The browser talks to our API through `apiFetch`, which adds the token to every request. It talks to Open-Meteo (`weather.js`) and Wikipedia (`places.js`) with plain `fetch`, so our token is never sent to another company. Answers from those two are kept in memory for the visit, so filtering or going back to a page does not download them again. The forecast is not stored: it changes every day, so it is fetched live from the outing's saved latitude, longitude and date.
 
 Every outing request passes `requireAuth` (who are you?) and then a database filter on `userId` (is it yours?). That is why another user's outing answers 404.
 
@@ -110,12 +118,13 @@ Index: `{ userId: 1, date: 1 }`, which matches the "My outings" query.
 
 ```
 client/                React app (Vite)
-  src/api/             apiFetch (our API) and weather.js (Open-Meteo)
+  src/api/             apiFetch (our API), weather.js (Open-Meteo), places.js (Wikipedia)
   src/auth/            AuthContext and AuthProvider
   src/hooks/           useApi, useForecast
   src/components/      Layout, ProtectedRoute, OutingCard, OutingForm, PlaceSearch, ForecastPanel...
   src/pages/           one file per screen
-  src/utils/           verdict rule, dates, formatting
+  src/utils/           verdict rule, packing list, dates, formatting
+  public/photos/       one photo per activity (credits below)
 server/                Express API
   app.js               builds the app (middleware, routes, error handler)
   server.js            loads .env, connects to MongoDB, listens
@@ -183,7 +192,7 @@ cd client && npm test
 ```
 
 - **Back end** (`server/tests/outings.test.js`): no token → 401, tampered token → 401, empty title → 400, impossible date → 400, short signup password → 400, an operator in the login email → 400. The tests import `app.js` directly, so they need no database and no open port.
-- **Front end** (`client/src/components/OutingCard.test.jsx`, `client/src/utils/verdict.test.js`): an outing card shows "Rain likely" for an 80 % rain forecast, the card links to its page, a far date shows when the forecast starts, the verdict rule including its edges (exactly 60 % and exactly 12 °C), and no verdict when the forecast is incomplete.
+- **Front end** (`client/src/components/OutingCard.test.jsx`, `client/src/utils/verdict.test.js`): an outing card shows "Rain likely" for an 80 % rain forecast, the card links to its page, a far date shows when the forecast starts, the verdict rule including its edges (exactly 60 % and exactly 12 °C), no verdict when the forecast is incomplete, the packing list, the activity filter, the Wikipedia helpers (is the article near the outing, which nearby places are sights, cleaning the description) and that a place is fetched only once.
 
 GitHub Actions runs both suites on every push (`.github/workflows/ci.yml`).
 
@@ -207,6 +216,8 @@ GitHub Actions runs both suites on every push (`.github/workflows/ci.yml`).
 - bcrypt only uses the first 72 bytes of a password. Very long passwords with accented letters are cut silently.
 - The token lasts one hour. A form left open longer than that is lost when it is saved, and the user has to log in again.
 - The API accepts any real date; only the form stops new outings in the past, so the notes of a past outing can still be edited.
+- Small villages may have no Wikipedia article; the app then shows the activity photo. "Nearby to explore" keeps places whose description names a sight (castle, temple, valley…), so it can miss a place or show an odd one.
+- Packing ticks are saved in this browser only, not in the database.
 
 ## Photos and texts
 

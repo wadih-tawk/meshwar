@@ -78,7 +78,7 @@ export default function OutingForm({ initial = EMPTY, submitLabel, onSubmit, onC
         <select id="activity" name="activity" value={values.activity} onChange={handleChange}>
           {ACTIVITIES.map(activity => (
             <option key={activity.value} value={activity.value}>
-              {activity.label}
+              {activity.icon} {activity.label}
             </option>
           ))}
         </select>

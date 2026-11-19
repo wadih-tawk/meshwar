@@ -9,6 +9,7 @@ export default function Layout() {
       <header className="topbar">
         <div className="topbar-inner">
           <Link to="/outings" className="brand">
+            <img src="/favicon.svg" alt="" className="brand-logo" />
             Meshwar
           </Link>
           <nav className="topbar-actions">
