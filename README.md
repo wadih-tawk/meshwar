@@ -257,7 +257,7 @@ GitHub Actions runs both suites on every push (`.github/workflows/ci.yml`).
 | Failed logins | 5 per 15 min | network **and** email, so one person guessing a password does not lock out everyone on the same Wi-Fi |
 | Failed logins | 20 per 15 min | network, to slow down guessing many accounts |
 | Failed logins | 20 per hour | account (email), from any network, so spreading guesses over many IP addresses does not help |
-| New accounts | 20 created per hour | network (failed tries do not count) |
+| Sign-ups | 20 per hour | network (new accounts and already-taken emails count, so the limit also slows down checking which emails have an account; forms with invalid fields do not count) |
 | Photo uploads (posts, stories, profile photo) | 30 per hour per user, and 60 per hour per network | user and network, so making new accounts does not give more uploads |
 | Friend requests · comments · likes · shares | 30 per hour · 20 per 10 min · 120 per 10 min · 30 per hour | user |
 | Photos (`/api/images`) | 2000 per 15 min | network (high, because one feed page shows many photos) |

@@ -58,12 +58,15 @@ describe('logging in', () => {
 });
 
 describe('signing up', () => {
-  it('allows 20 new accounts per hour from one network (3 were made above), not counting failed tries', async () => {
+  it('allows 20 sign-ups per hour from one network (3 were made above), counting taken emails but not invalid forms', async () => {
     for (let i = 0; i < 5; i += 1) {
       expect((await request(app).post('/api/auth/signup').send({ email: 'bad' })).status).toBe(400);
     }
+    for (let i = 0; i < 3; i += 1) {
+      expect((await request(app).post('/api/auth/signup').send({ name: 'Alice again', email: 'alice@test.com', password: 'password123' })).status).toBe(409);
+    }
     const codes = [];
-    for (let i = 0; i < 17; i += 1) {
+    for (let i = 0; i < 14; i += 1) {
       codes.push((await request(app).post('/api/auth/signup').send({ name: `User ${i}`, email: `user${i}@test.com`, password: 'password123' })).status);
     }
     expect(codes.every(code => code === 201)).toBe(true);
