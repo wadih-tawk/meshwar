@@ -42,6 +42,7 @@ it('goes back and forth with the arrow keys and closes with Escape', async () =>
   apiFetch.mockResolvedValueOnce(stories);
   render(<StoryViewer person={person} onClose={onClose} />);
   await screen.findByText('First <b>one</b>');
+  await act(async () => {});
   fireEvent.keyDown(window, { key: 'ArrowRight' });
   expect(screen.getByText('Second')).toBeInTheDocument();
   fireEvent.keyDown(window, { key: 'ArrowLeft' });
@@ -55,6 +56,7 @@ it('pauses while I decide to delete my story, then deletes it', async () => {
   apiFetch.mockResolvedValueOnce(stories);
   render(<StoryViewer person={person} onClose={vi.fn()} onChange={onChange} />);
   await screen.findByText('First <b>one</b>');
+  await act(async () => {});
   fireEvent.click(screen.getByRole('button', { name: 'Delete…' }));
   act(() => {
     vi.advanceTimersByTime(10000);
@@ -67,4 +69,18 @@ it('pauses while I decide to delete my story, then deletes it', async () => {
   expect(apiFetch).toHaveBeenLastCalledWith('/api/stories/s1', { method: 'DELETE' });
   expect(screen.getByText('Second')).toBeInTheDocument();
   expect(onChange).toHaveBeenCalled();
+});
+
+it('keeps keyboard focus inside the viewer', async () => {
+  apiFetch.mockResolvedValueOnce(stories);
+  render(<StoryViewer person={person} onClose={vi.fn()} />);
+  await screen.findByText('First <b>one</b>');
+  await act(async () => {});
+  const close = screen.getByRole('button', { name: 'Close stories' });
+  expect(document.activeElement).toBe(close);
+  screen.getByRole('button', { name: 'Delete…' }).focus();
+  fireEvent.keyDown(window, { key: 'Tab' });
+  expect(document.activeElement).toBe(close);
+  fireEvent.keyDown(window, { key: 'Tab', shiftKey: true });
+  expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Delete…' }));
 });

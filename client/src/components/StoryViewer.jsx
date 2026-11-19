@@ -13,6 +13,7 @@ export default function StoryViewer({ person, onClose, onChange }) {
   const [confirming, setConfirming] = useState(false);
   const [problem, setProblem] = useState('');
   const closeButton = useRef(null);
+  const box = useRef(null);
 
   const stories = data ? data.filter(story => !removed.includes(story.id)) : [];
   const story = stories[index];
@@ -40,6 +41,18 @@ export default function StoryViewer({ person, onClose, onChange }) {
       if (e.key === 'Escape') onClose();
       if (e.key === 'ArrowRight') next();
       if (e.key === 'ArrowLeft') previous();
+      if (e.key === 'Tab') {
+        const buttons = [...box.current.querySelectorAll('button:not([disabled])')];
+        const first = buttons[0];
+        const last = buttons[buttons.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     }
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
@@ -78,7 +91,7 @@ export default function StoryViewer({ person, onClose, onChange }) {
       <>
         <div className="story-progress">
           {stories.map((item, i) => (
-            <span key={item.id} className={i < index ? 'seen' : i === index ? 'current' : ''} />
+            <span key={i === index ? `${item.id}-${confirming}` : item.id} className={i < index ? 'seen' : i === index ? 'current' : ''} />
           ))}
         </div>
         <img key={story.id} className="story-photo" src={imageSrc(story.imageUrl)} alt={story.caption || `Story by ${person.name}`} />
@@ -110,7 +123,7 @@ export default function StoryViewer({ person, onClose, onChange }) {
 
   return (
     <div className="story-backdrop" onClick={onClose}>
-      <div className={confirming ? "story-box paused" : "story-box"} role="dialog" aria-modal="true" aria-label={`Stories by ${person.name}`} onClick={e => e.stopPropagation()}>
+      <div ref={box} className={confirming ? "story-box paused" : "story-box"} role="dialog" aria-modal="true" aria-label={`Stories by ${person.name}`} onClick={e => e.stopPropagation()}>
         <header className="story-head">
           <Avatar name={person.name} url={person.avatarUrl} size="small" />
           <strong>{person.name}</strong>
