@@ -40,11 +40,12 @@ A weather-aware outing planner for students in Lebanon. Save a hike, a beach day
 |---|---|
 | Front end | React 19 + Vite, React Router, Context for auth state, plain CSS (Flexbox, Grid, media queries), dayjs |
 | Back end | Node.js + Express 5 REST API |
-| Database | MongoDB Atlas with Mongoose (collections `users` and `outings`) |
+| Database | MongoDB Atlas with Mongoose (collections `users`, `outings`, `images`, `friendships`, `posts`, `comments`, `messages`, `stories`) |
 | Authentication | bcrypt password hashes, JWT (1 hour) sent as `Authorization: Bearer`, `requireAuth` middleware |
+| Photo uploads | `multer` (reads the upload into memory, with size and type limits), `sharp` (checks the real format and re-encodes to JPEG), signed expiring photo links (HMAC from Node's `crypto`) |
 | Validation and security | zod schemas on every request body, `helmet`, CORS limited to the client URL, rate limits (see below), 10 kB body limit, `sanitizeFilter` |
 | Third-party APIs | Open-Meteo Geocoding and Forecast; Wikipedia (MediaWiki API) for place photos, descriptions and nearby sights; Google Maps (embedded map and directions links) with the browser Geolocation API. All free, no API key |
-| Tests | Vitest + Supertest (back end), Vitest + React Testing Library (front end) |
+| Tests | Vitest + Supertest + `mongodb-memory-server` (back end, against a real temporary database), Vitest + React Testing Library (front end) |
 | Hosting | API on Render, client on Vercel, database on Atlas |
 
 ## Architecture
@@ -59,8 +60,10 @@ flowchart LR
     PL["api/places.js"]
   end
   subgraph S["Express API"]
-    MW["helmet, cors, json, rate limit"]
-    R["/api/auth and /api/outings"]
+    MW["helmet, cors, json, rate limits"]
+    R["/api/auth, outings, users, friends,<br/>posts, messages, stories"]
+    IMG["/api/images (signed links)"]
+    UP["multer + sharp"]
     RA["requireAuth"]
     V["validate (zod)"]
     M["Mongoose models"]
@@ -73,7 +76,9 @@ flowchart LR
   P --> AF
   P --> W
   P --> PL
-  AF -- "JSON + Bearer token" --> MW --> R --> RA --> V --> M --> DB
+  AF -- "JSON or photo + Bearer token" --> MW --> R --> RA --> V --> M --> DB
+  RA --> UP --> M
+  P -- "<img> with a signed link" --> IMG --> DB
   W -- "no token" --> OM
   PL -- "no token" --> WP
 ```
@@ -82,31 +87,39 @@ The app is three programs. The **React app** runs in the browser, draws the scre
 
 The browser talks to our API through `apiFetch`, which adds the token to every request. It talks to Open-Meteo (`weather.js`) and Wikipedia (`places.js`) with plain `fetch`, so our token is never sent to another company. Answers from those two are kept in memory for the visit, so filtering or going back to a page does not download them again. The forecast is not stored: it changes every day, so it is fetched live from the outing's saved latitude, longitude and date.
 
-Every outing request passes `requireAuth` (who are you?) and then a database filter on `userId` (is it yours?). That is why another user's outing answers 404.
+Every request passes `requireAuth` (who are you?) and then a database filter that includes the owner (is it yours?), for example `{ _id, userId: me }` for outings or `{ _id, author: me }` for posts. That is why another user's outing or post answers 404. Photos are the one exception to the token rule: an `<img>` tag cannot send a token, so the API hands out a **signed link** that expires within two hours, and only to people allowed to see the photo.
 
 ### Data model
 
 ```
-users                              outings
-_id           ObjectId  ◄───┐      _id        ObjectId
-name          String        └───── userId     ObjectId → users (from the token)
-email         String unique        title      String, max 80
-passwordHash  String (bcrypt)      activity   hike | beach | ski | picnic | city | other
-createdAt / updatedAt              place      { name, country, lat, lon }
-                                   date       String "YYYY-MM-DD"
-                                   notes      String, max 500
-                                   createdAt / updatedAt
+users          name, email (unique), passwordHash (bcrypt), bio (max 300), avatarId → images
+outings        userId → users, title, activity, place { name, country, lat, lon }, date "YYYY-MM-DD", notes
+images         ownerId → users, purpose (avatar | post | story), data (the JPEG bytes), width, height, size, expiresAt
+friendships    pair "idA:idB" (the two ids sorted, unique), requester → users, recipient → users, status (pending | accepted)
+posts          author → users, image → images, caption, outing snapshot { title, place, activity }, hidden, likes [user ids], commentCount, shareCount
+comments       post → posts, postAuthor → users, author → users, text (max 300)
+messages       from → users, to → users, post → posts, note (max 200)
+stories        author → users, image → images, caption (max 100), expiresAt (24 hours after posting)
 ```
 
-Index: `{ userId: 1, date: 1 }`, which matches the "My outings" query.
+Every collection also has `createdAt` and `updatedAt`.
+
+**Indexes:**
+
+- `outings { userId, date }` for "My outings".
+- `friendships.pair` unique, so two requests between the same two people cannot both be saved, even at the same moment.
+- `posts { author, createdAt }` and `{ hidden, createdAt }` for profiles and the feed.
+- `comments { post, createdAt }`.
+- `messages { to, createdAt }` and `{ from, createdAt }` for the inbox.
+- **TTL indexes** on `stories.expiresAt` and `images.expiresAt`, so MongoDB deletes stories and their photos by itself after 24 hours.
 
 ### API
 
 | Method and path | Token | Success | Errors |
 |---|---|---|---|
 | `GET /api/health` | no | 200 `{ ok: true }` | |
-| `POST /api/auth/signup` | no | 201 `{ token, user }` | 400, 409 |
-| `POST /api/auth/login` | no | 200 `{ token }` | 400, 401, 429 |
+| `POST /api/auth/signup` | no | 201 `{ token, user }` | 400, 409, 429 |
+| `POST /api/auth/login` | no | 200 `{ token, user }` | 400, 401, 429 |
 | `GET /api/outings` | yes | 200, your outings sorted by date | 401 |
 | `POST /api/outings` | yes | 201, the new outing | 400, 401 |
 | `GET /api/outings/:id` | yes | 200 | 400, 401, 404 |
@@ -142,27 +155,36 @@ Index: `{ userId: 1, date: 1 }`, which matches the "My outings" query.
 | `/outings/new` | New outing | logged in |
 | `/outings/:id` | Outing page (forecast + verdict) | logged in |
 | `/outings/:id/edit` | Edit outing | logged in |
+| `/ideas/:slug` | Idea page (gallery, what to do, map, Saturday forecast) | logged in |
+| `/feed` | Stories bar, new post, posts of you and your friends, then everyone | logged in |
+| `/inbox` | Posts friends sent you, and posts you sent | logged in |
+| `/people` | Friend requests, your friends, search people | logged in |
+| `/people/:id` | A public profile with its posts and stories | logged in |
+| `/me` | Edit your name, bio and profile photo | logged in |
 
 ## Project structure
 
 ```
 client/                React app (Vite)
-  src/api/             apiFetch (our API), weather.js (Open-Meteo), places.js (Wikipedia)
+  src/api/             apiFetch (our API, JSON or photo uploads), weather.js (Open-Meteo), places.js (Wikipedia)
   src/auth/            AuthContext and AuthProvider
-  src/hooks/           useApi, useForecast
-  src/components/      Layout, ProtectedRoute, OutingCard, OutingForm, PlaceSearch, ForecastPanel...
+  src/hooks/           useApi, useForecast, usePlaceSummary, useNearbyPlaces, usePhotoPicker
+  src/components/      Layout, ProtectedRoute, outing parts (OutingCard, OutingForm, PlaceSearch, ForecastPanel, RouteMap…),
+                       social parts (Avatar, FriendButton, PostCard, PostActions, Comments, SharePanel, StoryBar, StoryViewer…)
   src/pages/           one file per screen
-  src/utils/           verdict rule, packing list, dates, formatting
+  src/utils/           verdict rule, packing list, dates, formatting, maps links, outing ideas, photo checks
   public/photos/       one photo per activity (credits below)
 server/                Express API
-  app.js               builds the app (middleware, routes, error handler)
+  app.js               builds the app (middleware, rate limits, routes, error handler)
   server.js            loads .env, connects to MongoDB, listens
   config.js            stops the server if a required variable is missing
   auth/token.js        signToken, verifyToken
-  middleware/          requireAuth, validate (zod schemas)
-  models/              User, Outing
-  routes/              auth, outings
-  tests/               Supertest tests
+  images/photos.js     sharp checks and re-encoding, signed photo links
+  middleware/          requireAuth, validate (zod schemas), upload (multer + quota), limits (rate limits)
+  models/              User, Outing, Image, Friendship, Post, Comment, Message, Story
+  routes/              auth, outings, users, images, friends, posts, comments, messages, stories
+  views.js             what the API sends back about a person or a post (never an email or a hash)
+  tests/               Supertest tests against a temporary in-memory MongoDB
 ```
 
 ## Run it locally
@@ -216,12 +238,46 @@ npm run dev
 ## Tests
 
 ```bash
-cd server && npm test
-cd client && npm test
+cd server && npm test     # 128 tests
+cd client && npm test     # 78 tests
 ```
 
-- **Back end** (`server/tests/outings.test.js`): no token → 401, tampered token → 401, empty title → 400, impossible date → 400, short signup password → 400, an operator in the login email → 400. The tests import `app.js` directly, so they need no database and no open port.
-- **Front end** (`client/src/components/OutingCard.test.jsx`, `client/src/utils/verdict.test.js`): an outing card shows "Rain likely" for an 80 % rain forecast, the card links to its page, a far date shows when the forecast starts, the verdict rule including its edges (exactly 60 % and exactly 12 °C), no verdict when the forecast is incomplete, the packing list, the activity filter, the Wikipedia helpers (is the article near the outing, which nearby places are sights, cleaning the description) and that a place is fetched only once.
+**Back end** (`server/tests/`) starts a temporary MongoDB in memory (`mongodb-memory-server`) for each file, so the tests use real queries and indexes but never touch Atlas:
+
+- `outings.test.js`: no token → 401, tampered token → 401, empty title → 400, impossible date → 400, short signup password → 400, an operator in the login email → 400. These tests need no database.
+- `profiles.test.js`: own profile vs public profile (no email), mass assignment ignored, HTML and invisible characters refused in names, safe name search, and photo attacks:
+  - PHP hidden in a real JPEG comes out clean;
+  - PHP, SVG and GIF files are refused even when renamed `.jpg`/`.png`;
+  - files over 5 MB get 413;
+  - a broken upload gets 400;
+  - the 100-photo quota holds;
+  - changed, swapped or expired photo links get 403.
+- `friends.test.js`: only the receiver can accept; strangers cannot decline or unfriend; 10 identical requests sent at once create exactly one; two people adding each other at the same moment create one.
+- `posts.test.js`: friends first in the feed; hidden posts are invisible to others everywhere; nobody can attach someone else's private outing; only the author can edit, hide or delete; 5 deletes at once delete once.
+- `social.test.js`:
+  - 10 likes at once count once;
+  - comments are saved under the real author whatever the body claims;
+  - only the comment author or the post author can delete a comment;
+  - counters never go wrong;
+  - the comment rate limit works;
+  - sharing works only between friends;
+  - only the sender and the receiver can read a message.
+- `stories.test.js`: the TTL indexes exist, stories expire after 24 hours and hide the moment they expire, and only the author can delete them.
+- `attacks.test.js`: an **IDOR matrix** (20 owner-only actions tried by another user, all refused, and the victim's data checked unchanged afterwards), every protected route with no token, a forged token, an `alg: none` token and an expired token, and a sweep that no response leaks another user's email or a password hash.
+- `limits.test.js`:
+  - one locked account does not lock out the rest of the network;
+  - the per-network and per-account login caps hold;
+  - the sign-up limit holds;
+  - the upload limit applies across accounts.
+
+**Front end** (`client/src/**/*.test.js(x)`):
+
+- outing cards and the verdict rule, including its edges (exactly 60 % and exactly 12 °C);
+- the packing list, activity filter, place search, maps links, idea pages and their data (every stop has its own map point);
+- the photo gallery, avatar initials, the friend button flow;
+- post cards: captions shown as text, never HTML; owner buttons only on your own posts; hide and delete;
+- likes, comments and sharing;
+- the story viewer: moves on after 5 seconds, arrow keys and Escape, pausing while deleting, keeping keyboard focus inside.
 
 GitHub Actions runs both suites on every push (`.github/workflows/ci.yml`).
 
