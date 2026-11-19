@@ -11,3 +11,10 @@ export function activityLabel(value) {
   const activity = ACTIVITIES.find(item => item.value === value);
   return activity ? activity.label : 'Other';
 }
+
+export function placeLabel(place) {
+  if (!place.country) {
+    return place.name;
+  }
+  return `${place.name}, ${place.country}`;
+}
