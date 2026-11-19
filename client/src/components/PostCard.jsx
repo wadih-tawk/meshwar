@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Avatar from './Avatar.jsx';
+import PostActions from './PostActions.jsx';
 import { apiFetch, imageSrc } from '../api/client.js';
 import { timeAgo } from '../utils/dates.js';
 import { activityIcon } from '../utils/format.js';
@@ -94,6 +95,8 @@ export default function PostCard({ post: initial }) {
             {error}
           </p>
         )}
+
+        <PostActions post={post} />
 
         {post.mine && !editing && !confirming && (
           <div className="post-owner">

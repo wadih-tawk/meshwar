@@ -1,6 +1,6 @@
 import path from 'node:path';
 import multer from 'multer';
-import rateLimit from 'express-rate-limit';
+import { userLimiter } from './limits.js';
 
 const TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
@@ -21,9 +21,4 @@ export const uploadPhoto = multer({
   },
 }).single('photo');
 
-export const uploadLimiter = rateLimit({
-  windowMs: 60 * 60_000,
-  limit: 30,
-  keyGenerator: req => req.userId,
-  message: { error: 'Too many uploads, try again in an hour' },
-});
+export const uploadLimiter = userLimiter(60, 30, 'uploads');

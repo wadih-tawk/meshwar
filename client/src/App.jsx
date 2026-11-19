@@ -12,6 +12,7 @@ import IdeaPage from './pages/IdeaPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import PeoplePage from './pages/PeoplePage.jsx';
 import FeedPage from './pages/FeedPage.jsx';
+import InboxPage from './pages/InboxPage.jsx';
 import PersonPage from './pages/PersonPage.jsx';
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/ideas/:slug" element={<IdeaPage />} />
           <Route path="/me" element={<ProfilePage />} />
           <Route path="/feed" element={<FeedPage />} />
+          <Route path="/inbox" element={<InboxPage />} />
           <Route path="/people" element={<PeoplePage />} />
           <Route path="/people/:id" element={<PersonPage />} />
         </Route>

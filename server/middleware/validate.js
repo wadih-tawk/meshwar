@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { ACTIVITIES } from '../models/Outing.js';
 
+const id = message => z.string(message).regex(/^[a-f0-9]{24}$/, message);
+const oneLineBreak = text => text.replace(/\r\n/g, '\n');
+
 export const SignupInput = z.object({
   name: z.string('Name is required').trim().min(1, 'Name is required').max(50, 'Name must be at most 50 characters').regex(/^[^<>\u0000-\u001f]*$/, 'Name cannot contain < > or line breaks'),
   email: z.string('Email is required').trim().toLowerCase().email('Enter a valid email'),
@@ -18,23 +21,32 @@ export const ProfileInput = z.object({
 });
 
 export const FriendRequestInput = z.object({
-  userId: z.string('Choose a person').regex(/^[a-f0-9]{24}$/, 'Invalid user id'),
+  userId: id('Choose a person'),
 });
 
 const caption = z
   .string('Caption must be text')
-  .overwrite(text => text.replace(/\r\n/g, '\n'))
+  .overwrite(oneLineBreak)
   .trim()
   .max(500, 'Captions must be at most 500 characters');
 
 export const PostInput = z.object({
   caption: caption.default(''),
-  outingId: z.string().regex(/^[a-f0-9]{24}$/, 'Invalid outing id').optional(),
+  outingId: id('Invalid outing id').optional(),
 });
 
 export const PostUpdateInput = z.object({
   caption,
   hidden: z.boolean('Hidden must be true or false'),
+});
+
+export const CommentInput = z.object({
+  text: z.string('Write a comment').overwrite(oneLineBreak).trim().min(1, 'Write a comment').max(300, 'Comments must be at most 300 characters'),
+});
+
+export const ShareInput = z.object({
+  friendId: id('Choose a friend'),
+  note: z.string('The note must be text').overwrite(oneLineBreak).trim().max(200, 'Notes must be at most 200 characters').default(''),
 });
 
 export const OutingInput = z.object({

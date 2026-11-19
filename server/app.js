@@ -9,6 +9,8 @@ import usersRouter from './routes/users.js';
 import imagesRouter from './routes/images.js';
 import friendsRouter from './routes/friends.js';
 import postsRouter from './routes/posts.js';
+import commentsRouter from './routes/comments.js';
+import messagesRouter from './routes/messages.js';
 import { requireAuth } from './middleware/requireAuth.js';
 
 const app = express();
@@ -88,6 +90,8 @@ app.use('/api/outings', requireAuth, outingsRouter);
 app.use('/api/users', requireAuth, usersRouter);
 app.use('/api/friends', requireAuth, friendsRouter);
 app.use('/api/posts', requireAuth, postsRouter);
+app.use('/api/posts', requireAuth, commentsRouter);
+app.use('/api/messages', requireAuth, messagesRouter);
 
 app.use(notFound);
 app.use(handleErrors);

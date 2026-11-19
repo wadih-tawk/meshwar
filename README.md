@@ -26,6 +26,7 @@ A weather-aware outing planner for students in Lebanon. Save a hike, a beach day
 - **Profiles:** a name, a bio and a profile photo. Search people by name and open their public profile (no email shown). You can only edit your own profile.
 - **Friends:** send a friend request from someone's profile; they accept or decline it on the People page. Either friend can end the friendship.
 - **Feed:** post a photo with a caption, optionally linked to one of your own outings. The feed shows you and your friends first, then everyone else. You can edit the caption, hide a post (then only you see it) or delete it with its photo.
+- **Likes, comments and sharing:** like or unlike any post you can see, comment on it (you can delete your own comments, and the author of a post can delete comments on it), and send a post to a friend with a short note. Shared posts arrive in the **Inbox**, which only the sender and the receiver can read.
 - Edit and delete your own outings, with a confirm step before deleting.
 - Protection: outing pages redirect to the login page without a token. The API answers 401 without a valid token and 404 for someone else's outing.
 - Responsive layout for phone and desktop.
@@ -121,6 +122,11 @@ Index: `{ userId: 1, date: 1 }`, which matches the "My outings" query.
 | `GET /api/posts/feed` | yes | 200, `{ friends, others }`, newest first, 30 each | 401 |
 | `GET /api/posts/user/:userId` · `GET /api/posts/:id` | yes | 200 (hidden posts only for their author) | 400, 401, 404 |
 | `PUT /api/posts/:id` `{ caption, hidden }` · `DELETE /api/posts/:id` | yes (the author only) | 200 · 204 | 400, 401, 404 |
+| `PUT /api/posts/:id/like` · `DELETE /api/posts/:id/like` | yes | 200 `{ likeCount, likedByMe }` | 400, 401, 404, 429 |
+| `GET /api/posts/:id/comments` · `POST /api/posts/:id/comments` `{ text }` | yes | 200 list · 201 | 400, 401, 404, 429 |
+| `DELETE /api/posts/:id/comments/:commentId` | yes (comment or post author) | 200 `{ commentCount }` | 400, 401, 404 |
+| `POST /api/posts/:id/share` `{ friendId, note }` | yes (friends only) | 201 | 400, 401, 403 not friends, 404, 429 |
+| `GET /api/messages` · `GET /api/messages/:id` | yes (sender or receiver) | 200 | 400, 401, 404 |
 | `GET /api/images/:id?expires=…&sig=…` | signed link | 200, the JPEG | 403 bad or expired link, 404 |
 
 ### Front-end routes

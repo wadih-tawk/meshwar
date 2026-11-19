@@ -1,29 +1,20 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import rateLimit from 'express-rate-limit';
 import Friendship, { pairKey } from '../models/Friendship.js';
 import User from '../models/User.js';
 import { validate, FriendRequestInput } from '../middleware/validate.js';
-import { imageUrl } from '../images/photos.js';
+import { userLimiter } from '../middleware/limits.js';
+import { personView } from '../views.js';
 
 const router = express.Router();
 
-const requestLimiter = rateLimit({
-  windowMs: 60 * 60_000,
-  limit: 30,
-  keyGenerator: req => req.userId,
-  message: { error: 'Too many friend requests, try again in an hour' },
-});
+const requestLimiter = userLimiter(60, 30, 'friend requests');
 
 function checkId(req, res, next) {
   if (!mongoose.isValidObjectId(req.params.id)) {
     return res.status(400).json({ error: 'Invalid id' });
   }
   next();
-}
-
-function person(user) {
-  return { id: user._id, name: user.name, avatarUrl: imageUrl(user.avatarId) };
 }
 
 router.get('/', async (req, res) => {
@@ -37,7 +28,7 @@ router.get('/', async (req, res) => {
     if (!link.requester || !link.recipient) return;
     const iSent = String(link.requester._id) === String(me);
     const other = iSent ? link.recipient : link.requester;
-    const item = { requestId: link._id, ...person(other) };
+    const item = { requestId: link._id, ...personView(other) };
     if (link.status === 'accepted') result.friends.push(item);
     else if (iSent) result.outgoing.push(item);
     else result.incoming.push(item);

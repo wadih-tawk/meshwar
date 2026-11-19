@@ -15,6 +15,10 @@ const post = {
   outing: { title: 'Beach day', place: 'Batroun', activity: 'beach' },
   hidden: false,
   mine: true,
+  likeCount: 0,
+  likedByMe: false,
+  commentCount: 0,
+  shareCount: 0,
   createdAt: new Date().toISOString(),
 };
 

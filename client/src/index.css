@@ -1331,3 +1331,164 @@ textarea {
 .text-danger {
   color: var(--danger);
 }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.post-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.action {
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.action:hover {
+  border-color: var(--sand-dark);
+  background: var(--cream);
+}
+
+.action-on {
+  border-color: var(--clay);
+  color: var(--earth);
+  font-weight: 600;
+}
+
+.comments {
+  display: grid;
+  gap: 0.625rem;
+}
+
+.comment {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.comment-body {
+  flex: 1;
+  min-width: 0;
+  padding: 0.5rem 0.75rem;
+  background: var(--cream);
+  border-radius: var(--radius);
+}
+
+.comment-head {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.comment-head a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.comment-text {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.comment-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.comment-form input {
+  flex: 1;
+  min-width: 0;
+}
+
+.share-panel {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--cream);
+  border-radius: var(--radius);
+}
+
+.message {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.message-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.message-head p,
+.message-note {
+  margin: 0;
+}
+
+.message-note {
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--clay);
+  background: var(--surface);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  overflow-wrap: anywhere;
+}
+
+.topbar-me {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.topbar-actions {
+  width: 100%;
+  gap: 0.25rem;
+}
+
+.topbar .button {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.topbar-actions .nav-link {
+  padding: 0.25rem 0.375rem;
+  font-size: 0.9375rem;
+}
+
+@media (min-width: 640px) {
+  .topbar-actions {
+    order: 1;
+    width: auto;
+    margin-left: auto;
+    gap: 0.5rem;
+  }
+
+  .topbar-me {
+    order: 2;
+  }
+
+  .topbar-actions .nav-link {
+    padding: 0.25rem 0.5rem;
+    font-size: 1rem;
+  }
+
+  .topbar .button {
+    padding: 0.5rem 1.125rem;
+    font-size: 1rem;
+  }
+}
