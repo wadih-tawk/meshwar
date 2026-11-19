@@ -40,6 +40,10 @@ export const PostUpdateInput = z.object({
   hidden: z.boolean('Hidden must be true or false'),
 });
 
+export const StoryInput = z.object({
+  caption: z.string('Caption must be text').trim().max(100, 'Story captions must be at most 100 characters').default(''),
+});
+
 export const CommentInput = z.object({
   text: z.string('Write a comment').overwrite(oneLineBreak).trim().min(1, 'Write a comment').max(300, 'Comments must be at most 300 characters'),
 });

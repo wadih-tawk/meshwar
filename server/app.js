@@ -11,6 +11,7 @@ import friendsRouter from './routes/friends.js';
 import postsRouter from './routes/posts.js';
 import commentsRouter from './routes/comments.js';
 import messagesRouter from './routes/messages.js';
+import storiesRouter from './routes/stories.js';
 import { requireAuth } from './middleware/requireAuth.js';
 
 const app = express();
@@ -92,6 +93,7 @@ app.use('/api/friends', requireAuth, friendsRouter);
 app.use('/api/posts', requireAuth, postsRouter);
 app.use('/api/posts', requireAuth, commentsRouter);
 app.use('/api/messages', requireAuth, messagesRouter);
+app.use('/api/stories', requireAuth, storiesRouter);
 
 app.use(notFound);
 app.use(handleErrors);

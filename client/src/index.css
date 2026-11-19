@@ -1492,3 +1492,243 @@ textarea {
     font-size: 1rem;
   }
 }
+
+.stories {
+  padding: 0.75rem 1rem;
+}
+
+.story-list {
+  display: flex;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.25rem 0;
+  overflow-x: auto;
+  list-style: none;
+}
+
+.story-item {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.25rem;
+  width: 4.5rem;
+}
+
+.story-label {
+  max-width: 4.5rem;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.story-ring {
+  padding: 3px;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--clay), var(--olive));
+  cursor: pointer;
+}
+
+.story-ring .avatar {
+  border: 2px solid var(--surface);
+}
+
+.story-add {
+  position: relative;
+  padding: 3px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.story-add input {
+  display: none;
+}
+
+.story-plus {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.story-composer {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.story-composer img {
+  width: 8rem;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+.story-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(20, 28, 22, 0.85);
+}
+
+.story-box {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(24rem, 100%);
+  max-height: 100%;
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: #111;
+  color: #fff;
+}
+
+.story-head {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem 0.75rem 0.75rem;
+  background: linear-gradient(rgba(0, 0, 0, 0.55), transparent);
+  font-size: 0.875rem;
+}
+
+.story-head span {
+  opacity: 0.8;
+}
+
+.story-close {
+  margin-left: auto;
+  border: 0;
+  background: none;
+  color: #fff;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.story-progress {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  left: 0.75rem;
+  z-index: 3;
+  display: flex;
+  gap: 4px;
+}
+
+.story-progress span {
+  flex: 1;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.story-progress .seen {
+  background: #fff;
+}
+
+.story-progress .current::after {
+  content: '';
+  display: block;
+  height: 100%;
+  background: #fff;
+  animation: story-fill 5s linear forwards;
+}
+
+.story-box.paused .story-progress .current::after {
+  animation-play-state: paused;
+}
+
+@keyframes story-fill {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.story-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.story-caption {
+  position: absolute;
+  right: 0;
+  bottom: 3.5rem;
+  left: 0;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.45);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.story-nav {
+  position: absolute;
+  top: 4rem;
+  bottom: 4rem;
+  z-index: 1;
+  width: 35%;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.story-prev {
+  left: 0;
+}
+
+.story-next {
+  right: 0;
+}
+
+.story-owner {
+  position: absolute;
+  right: 0;
+  bottom: 0.75rem;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.story-message {
+  margin: auto;
+  padding: 1rem;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-progress .current::after {
+    width: 100%;
+    animation: none;
+  }
+}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import PostComposer from '../components/PostComposer.jsx';
 import PostList from '../components/PostList.jsx';
+import StoryBar from '../components/StoryBar.jsx';
 import { useApi } from '../hooks/useApi.js';
 
 export default function FeedPage() {
@@ -41,6 +42,7 @@ export default function FeedPage() {
     <div className="feed">
       <h1>Feed</h1>
       <p className="muted">Photos from outings: your friends first, then everyone on Meshwar.</p>
+      <StoryBar />
       <PostComposer onPosted={post => setAdded(list => [post, ...list])} />
       {content}
     </div>

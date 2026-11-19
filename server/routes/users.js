@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Image from '../models/Image.js';
+import Story, { stillActive } from '../models/Story.js';
 import { validate, ProfileInput } from '../middleware/validate.js';
 import { uploadLimiter, uploadPhoto } from '../middleware/upload.js';
 import { imageUrl, toSafeJpeg } from '../images/photos.js';
@@ -74,7 +75,8 @@ router.get('/', async (req, res) => {
 router.get('/:id', checkId, async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
-  res.json(publicProfile(user));
+  const hasStory = Boolean(await Story.exists({ author: user._id, expiresAt: stillActive() }));
+  res.json({ ...publicProfile(user), hasStory });
 });
 
 export default router;

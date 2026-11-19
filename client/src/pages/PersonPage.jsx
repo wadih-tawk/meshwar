@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
-import Avatar from '../components/Avatar.jsx';
 import FriendButton from '../components/FriendButton.jsx';
 import PersonPosts from '../components/PersonPosts.jsx';
+import StoryRing from '../components/StoryRing.jsx';
 import { useAuth } from '../auth/AuthContext.js';
 import { useApi } from '../hooks/useApi.js';
 import { formatDate } from '../utils/dates.js';
@@ -31,7 +31,7 @@ export default function PersonPage() {
   return (
     <div className="feed">
       <section className="panel profile-card">
-        <Avatar name={person.name} url={person.avatarUrl} size="large" />
+        <StoryRing person={person} hasStory={person.hasStory} size="large" />
         <h1>{person.name}</h1>
         <p className="muted">Joined {formatDate(person.joinedAt.slice(0, 10))}</p>
         {person.bio ? <p className="bio">{person.bio}</p> : <p className="muted">No bio yet.</p>}

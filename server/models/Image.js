@@ -9,8 +9,11 @@ const imageSchema = new mongoose.Schema(
     width: Number,
     height: Number,
     size: Number,
+    expiresAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
+
+imageSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export default mongoose.model('Image', imageSchema);
