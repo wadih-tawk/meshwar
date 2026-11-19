@@ -13,14 +13,6 @@ export default function Layout() {
             <img src="/favicon.svg" alt="" className="brand-logo" />
             Meshwar
           </Link>
-          <div className="topbar-me">
-            <Link to="/me" className="nav-avatar" aria-label="My profile">
-              <Avatar name={user ? user.name : ''} url={user ? user.avatarUrl : null} size="small" />
-            </Link>
-            <button type="button" className="button button-ghost" onClick={logout}>
-              Log out
-            </button>
-          </div>
           <nav className="topbar-actions">
             <NavLink to="/outings" end className="nav-link">
               Home
@@ -38,6 +30,14 @@ export default function Layout() {
               + New
             </Link>
           </nav>
+          <div className="topbar-me">
+            <Link to="/me" className="nav-avatar" aria-label="My profile">
+              <Avatar name={user ? user.name : ''} url={user ? user.avatarUrl : null} size="small" />
+            </Link>
+            <button type="button" className="button button-ghost" onClick={logout}>
+              Log out
+            </button>
+          </div>
         </div>
       </header>
       <main className="page">
