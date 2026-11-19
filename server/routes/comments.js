@@ -35,12 +35,12 @@ router.get('/:id/comments', checkIds, async (req, res) => {
 });
 
 router.post('/:id/comments', checkIds, commentLimiter, validate(CommentInput), async (req, res) => {
-  const filter = { _id: req.params.id, ...visibleTo(req.userId) };
-  const post = await Post.findOneAndUpdate(filter, { $inc: { commentCount: 1 } }, { returnDocument: 'after' });
+  const post = await Post.findOne({ _id: req.params.id, ...visibleTo(req.userId) });
   if (!post) return res.status(404).json({ error: 'Post not found' });
   const comment = await Comment.create({ post: post._id, postAuthor: post.author, author: req.userId, text: req.body.text });
+  const counted = await Post.findByIdAndUpdate(post._id, { $inc: { commentCount: 1 } }, { returnDocument: 'after' });
   await comment.populate('author', 'name avatarId');
-  res.status(201).json({ comment: commentView(comment, req.userId), commentCount: post.commentCount });
+  res.status(201).json({ comment: commentView(comment, req.userId), commentCount: counted ? counted.commentCount : 0 });
 });
 
 router.delete('/:id/comments/:commentId', checkIds, async (req, res) => {

@@ -18,8 +18,6 @@ const app = express();
 
 mongoose.set('sanitizeFilter', true);
 
-
-
 function logger(req, res, next) {
   const time = new Date().toLocaleTimeString();
   console.log(`${time} ${req.ip} ${req.method} ${req.path}`);

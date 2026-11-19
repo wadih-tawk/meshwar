@@ -111,10 +111,11 @@ router.post('/:id/share', checkId, shareLimiter, validate(ShareInput), async (re
   if (!(await areFriends(req.userId, friendId))) {
     return res.status(403).json({ error: 'You can only share posts with your friends' });
   }
-  const post = await Post.findOneAndUpdate({ _id: req.params.id, hidden: false }, { $inc: { shareCount: 1 } }, { returnDocument: 'after' });
+  const post = await Post.findOne({ _id: req.params.id, hidden: false });
   if (!post) return res.status(404).json({ error: 'Post not found' });
   await Message.create({ from: req.userId, to: friendId, post: post._id, note });
-  res.status(201).json({ shareCount: post.shareCount });
+  const counted = await Post.findByIdAndUpdate(post._id, { $inc: { shareCount: 1 } }, { returnDocument: 'after' });
+  res.status(201).json({ shareCount: counted ? counted.shareCount : 0 });
 });
 
 export default router;
