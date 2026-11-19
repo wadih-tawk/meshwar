@@ -1,10 +1,16 @@
 import { useState } from 'react';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.js';
 
-export default function SignupPage({ onShowLogin }) {
-  const { signup } = useAuth();
+export default function SignupPage() {
+  const { token, signup } = useAuth();
+  const navigate = useNavigate();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  if (token) {
+    return <Navigate to="/outings" replace />;
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -13,6 +19,7 @@ export default function SignupPage({ onShowLogin }) {
     setError('');
     try {
       await signup(form.get('name'), form.get('email'), form.get('password'));
+      navigate('/outings');
     } catch (err) {
       setError(err.message);
       setBusy(false);
@@ -49,10 +56,7 @@ export default function SignupPage({ onShowLogin }) {
           </button>
         </form>
         <p className="small">
-          Already have an account?{' '}
-          <button type="button" onClick={onShowLogin}>
-            Log in
-          </button>
+          Already have an account? <Link to="/login">Log in</Link>
         </p>
       </div>
     </main>

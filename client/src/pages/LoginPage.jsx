@@ -1,10 +1,16 @@
 import { useState } from 'react';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.js';
 
-export default function LoginPage({ onShowSignup }) {
-  const { login } = useAuth();
+export default function LoginPage() {
+  const { token, login } = useAuth();
+  const navigate = useNavigate();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  if (token) {
+    return <Navigate to="/outings" replace />;
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -13,6 +19,7 @@ export default function LoginPage({ onShowSignup }) {
     setError('');
     try {
       await login(form.get('email'), form.get('password'));
+      navigate('/outings');
     } catch (err) {
       setError(err.message);
       setBusy(false);
@@ -44,10 +51,7 @@ export default function LoginPage({ onShowSignup }) {
           </button>
         </form>
         <p className="small">
-          No account yet?{' '}
-          <button type="button" onClick={onShowSignup}>
-            Sign up
-          </button>
+          No account yet? <Link to="/signup">Sign up</Link>
         </p>
       </div>
     </main>

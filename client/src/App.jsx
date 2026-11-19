@@ -1,26 +1,29 @@
-import { useState } from 'react';
-import { useAuth } from './auth/AuthContext.js';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import Layout from './components/Layout.jsx';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import SignupPage from './pages/SignupPage.jsx';
+import OutingsPage from './pages/OutingsPage.jsx';
+import NewOutingPage from './pages/NewOutingPage.jsx';
+import OutingPage from './pages/OutingPage.jsx';
+import EditOutingPage from './pages/EditOutingPage.jsx';
+import NotFoundPage from './pages/NotFoundPage.jsx';
 
 export default function App() {
-  const { token, logout } = useAuth();
-  const [screen, setScreen] = useState('login');
-
-  if (token) {
-    return (
-      <main>
-        <h1>Meshwar</h1>
-        <p>You are logged in.</p>
-        <button type="button" onClick={logout}>
-          Log out
-        </button>
-      </main>
-    );
-  }
-
-  if (screen === 'signup') {
-    return <SignupPage onShowLogin={() => setScreen('login')} />;
-  }
-  return <LoginPage onShowSignup={() => setScreen('signup')} />;
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/outings" replace />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<Layout />}>
+          <Route path="/outings" element={<OutingsPage />} />
+          <Route path="/outings/new" element={<NewOutingPage />} />
+          <Route path="/outings/:id" element={<OutingPage />} />
+          <Route path="/outings/:id/edit" element={<EditOutingPage />} />
+        </Route>
+      </Route>
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
+  );
 }
