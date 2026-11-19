@@ -1,20 +1,12 @@
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import app from '../app.js';
-import { signUp, startDatabase, stopDatabase } from './setup-db.js';
+import { as, signUp, startDatabase, stopDatabase } from './setup-db.js';
 
 let alice;
 let bob;
 let carol;
 let dan;
-
-function as(user) {
-  return {
-    get: path => request(app).get(path).set('Authorization', `Bearer ${user.token}`),
-    post: (path, body) => request(app).post(path).set('Authorization', `Bearer ${user.token}`).send(body),
-    delete: path => request(app).delete(path).set('Authorization', `Bearer ${user.token}`),
-  };
-}
 
 beforeAll(async () => {
   await startDatabase();

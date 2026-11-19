@@ -1,29 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Avatar from '../components/Avatar.jsx';
 import { apiFetch } from '../api/client.js';
 import { useAuth } from '../auth/AuthContext.js';
 import { useApi } from '../hooks/useApi.js';
-import { checkPhotoFile } from '../utils/photos.js';
+import { usePhotoPicker } from '../hooks/usePhotoPicker.js';
 
 function ProfileEditor({ initial }) {
   const { updateUser } = useAuth();
+  const photo = usePhotoPicker();
   const [profile, setProfile] = useState(initial);
   const [name, setName] = useState(initial.name);
   const [bio, setBio] = useState(initial.bio);
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    return () => {
-      if (preview) {
-        URL.revokeObjectURL(preview);
-      }
-    };
-  }, [preview]);
 
   function saved(next, text) {
     setProfile(next);
@@ -45,31 +36,14 @@ function ProfileEditor({ initial }) {
     setBusy(false);
   }
 
-  function handlePick(e) {
-    const chosen = e.target.files[0];
-    e.target.value = '';
-    if (!chosen) {
-      return;
-    }
-    const problem = checkPhotoFile(chosen);
-    if (problem) {
-      setError(problem);
-      return;
-    }
-    setError('');
-    setFile(chosen);
-    setPreview(URL.createObjectURL(chosen));
-  }
-
   async function handleUpload() {
     const form = new FormData();
-    form.append('photo', file);
+    form.append('photo', photo.file);
     setBusy(true);
     try {
       const next = await apiFetch('/api/users/me/avatar', { method: 'PUT', body: form });
       saved(next, 'Profile photo updated.');
-      setFile(null);
-      setPreview(null);
+      photo.clear();
     } catch (err) {
       setError(err.message);
     }
@@ -87,31 +61,33 @@ function ProfileEditor({ initial }) {
     setBusy(false);
   }
 
+  const problem = photo.problem || error;
+
   return (
     <div className="profile-layout">
       <section className="panel profile-card">
-        {preview ? <img className="avatar avatar-large" src={preview} alt="New profile photo" /> : <Avatar name={profile.name} url={profile.avatarUrl} size="large" />}
+        {photo.preview ? <img className="avatar avatar-large" src={photo.preview} alt="New profile photo" /> : <Avatar name={profile.name} url={profile.avatarUrl} size="large" />}
         <h1>{profile.name}</h1>
         <p className="muted">{profile.email}</p>
         {profile.bio && <p className="bio">{profile.bio}</p>}
         <div className="form-actions">
           <label className="button button-quiet file-button">
             {profile.avatarUrl ? 'Change photo' : 'Add a photo'}
-            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePick} />
+            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={photo.pick} />
           </label>
-          {file && (
+          {photo.file && (
             <button type="button" className="button" onClick={handleUpload} disabled={busy}>
               {busy ? 'Uploading…' : 'Save photo'}
             </button>
           )}
-          {!file && profile.avatarUrl && (
+          {!photo.file && profile.avatarUrl && (
             <button type="button" className="button button-danger" onClick={handleRemove} disabled={busy}>
               Remove photo
             </button>
           )}
         </div>
         <p className="small">JPG, PNG or WebP, up to 5 MB.</p>
-        <Link to={`/people/${profile.id}`}>See my public profile</Link>
+        <Link to={`/people/${profile.id}`}>See my public profile and posts</Link>
       </section>
 
       <form className="panel form" onSubmit={handleSave}>
@@ -126,9 +102,9 @@ function ProfileEditor({ initial }) {
           <p className="small">{bio.length}/300</p>
         </div>
         {message && <p className="success">{message}</p>}
-        {error && (
+        {problem && (
           <p className="error" role="alert">
-            {error}
+            {problem}
           </p>
         )}
         <div className="form-actions">

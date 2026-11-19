@@ -21,6 +21,22 @@ export const FriendRequestInput = z.object({
   userId: z.string('Choose a person').regex(/^[a-f0-9]{24}$/, 'Invalid user id'),
 });
 
+const caption = z
+  .string('Caption must be text')
+  .overwrite(text => text.replace(/\r\n/g, '\n'))
+  .trim()
+  .max(500, 'Captions must be at most 500 characters');
+
+export const PostInput = z.object({
+  caption: caption.default(''),
+  outingId: z.string().regex(/^[a-f0-9]{24}$/, 'Invalid outing id').optional(),
+});
+
+export const PostUpdateInput = z.object({
+  caption,
+  hidden: z.boolean('Hidden must be true or false'),
+});
+
 export const OutingInput = z.object({
   title: z.string('Title is required').trim().min(1, 'Title is required').max(80, 'Title must be at most 80 characters'),
   activity: z.enum(ACTIVITIES, `Activity must be one of: ${ACTIVITIES.join(', ')}`),

@@ -25,6 +25,7 @@ A weather-aware outing planner for students in Lebanon. Save a hike, a beach day
 - The forecast shows a weather icon and label ("Partly cloudy", "Rain"…).
 - **Profiles:** a name, a bio and a profile photo. Search people by name and open their public profile (no email shown). You can only edit your own profile.
 - **Friends:** send a friend request from someone's profile; they accept or decline it on the People page. Either friend can end the friendship.
+- **Feed:** post a photo with a caption, optionally linked to one of your own outings. The feed shows you and your friends first, then everyone else. You can edit the caption, hide a post (then only you see it) or delete it with its photo.
 - Edit and delete your own outings, with a confirm step before deleting.
 - Protection: outing pages redirect to the login page without a token. The API answers 401 without a valid token and 404 for someone else's outing.
 - Responsive layout for phone and desktop.
@@ -116,6 +117,10 @@ Index: `{ userId: 1, date: 1 }`, which matches the "My outings" query.
 | `POST /api/friends/requests` `{ userId }` | yes | 201 | 400, 401, 404, 409 already linked, 429 |
 | `POST /api/friends/requests/:id/accept` | yes (the receiver only) | 200 | 400, 401, 404 |
 | `DELETE /api/friends/requests/:id` (decline or cancel) · `DELETE /api/friends/:userId` (unfriend) | yes (one of the two people) | 204 | 400, 401, 404 |
+| `POST /api/posts` (form fields `photo`, `caption`, optional `outingId`) | yes | 201, the post | 400, 401, 404 outing not yours, 413, 429 |
+| `GET /api/posts/feed` | yes | 200, `{ friends, others }`, newest first, 30 each | 401 |
+| `GET /api/posts/user/:userId` · `GET /api/posts/:id` | yes | 200 (hidden posts only for their author) | 400, 401, 404 |
+| `PUT /api/posts/:id` `{ caption, hidden }` · `DELETE /api/posts/:id` | yes (the author only) | 200 · 204 | 400, 401, 404 |
 | `GET /api/images/:id?expires=…&sig=…` | signed link | 200, the JPEG | 403 bad or expired link, 404 |
 
 ### Front-end routes
@@ -234,6 +239,9 @@ GitHub Actions runs both suites on every push (`.github/workflows/ci.yml`).
 - Uploads are limited to 30 per hour per user. The automated tests try these attacks (`server/tests/profiles.test.js`).
 
 ### Known limitations
+
+- A photo link that was already handed out keeps working until it expires (at most two hours), even if its post is hidden or its owner unfriends you. New links are only given to people allowed to see the post.
+- The feed shows the newest 30 posts of each group; there is no "load more" yet.
 
 - Signup answers "Email already registered", and a login with an unknown email answers faster than one with a wrong password, so someone could find out whether an email has an account. The login rate limit slows this down.
 - bcrypt only uses the first 72 bytes of a password. Very long passwords with accented letters are cut silently.

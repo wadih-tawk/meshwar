@@ -17,6 +17,9 @@ export default function Layout() {
             <NavLink to="/outings" end className="nav-link">
               Home
             </NavLink>
+            <NavLink to="/feed" className="nav-link">
+              Feed
+            </NavLink>
             <NavLink to="/people" className="nav-link">
               People
             </NavLink>
