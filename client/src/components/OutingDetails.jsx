@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import ForecastPanel from './ForecastPanel.jsx';
 import PlaceInfo from './PlaceInfo.jsx';
 import PackingList from './PackingList.jsx';
+import RouteMap from './RouteMap.jsx';
 import { apiFetch } from '../api/client.js';
 import { useForecast } from '../hooks/useForecast.js';
 import { usePlaceSummary } from '../hooks/usePlaceSummary.js';
@@ -53,6 +54,7 @@ export default function OutingDetails({ outing }) {
         <div className="outing-grid">
           <div className="outing-column">
             <ForecastPanel date={outing.date} timing={timing} forecast={forecast} error={error} loading={loading} retry={retry} />
+            <RouteMap place={outing.place} />
             <PlaceInfo place={outing.place} summary={summary} summaryLoading={summaryLoading} />
           </div>
 

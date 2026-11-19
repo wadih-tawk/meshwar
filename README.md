@@ -16,6 +16,9 @@ A weather-aware outing planner for students in Lebanon. Save a hike, a beach day
 - **My outings:** only your own outings, upcoming ones sorted by date, past ones in their own section.
 - **Outing page:** that day's forecast (min and max °C, rain chance, wind) and the verdict. The forecast covers today and the next 14 days; later dates show "Forecast available from <date>". If the weather service has not finished a day's forecast, the app says so instead of guessing a verdict.
 - **Photos and place info:** every outing shows a photo of its place and a short "About" text from Wikipedia, plus up to four sights nearby to explore (castles, temples, ski areas, valleys…). When Wikipedia has no photo, the app shows a photo for the activity.
+- **Home page:** a greeting by name, the next outing with a countdown ("In 3 days"), and **ideas for your next outing**: eight places around Lebanon with a photo, a short description and this Saturday's forecast. **Plan an outing here** opens the form already filled in.
+- **Place search as you type:** matches appear after a short pause, places in Lebanon first; use the arrow keys and Enter, or click.
+- **Getting there:** each outing shows a Google map of the place. **Show the route from where I am** asks the browser for your location and draws the route by car; **Open in Google Maps** opens the directions in Google Maps.
 - **Packing checklist** on each outing: items for the activity, plus a warm jacket when it will be cold and an umbrella when rain is likely. Ticked items are remembered in the browser.
 - **Filter My outings by activity** (hike, beach, ski, picnic, city).
 - The forecast shows a weather icon and label ("Partly cloudy", "Rain"…).
@@ -34,7 +37,7 @@ A weather-aware outing planner for students in Lebanon. Save a hike, a beach day
 | Database | MongoDB Atlas with Mongoose (collections `users` and `outings`) |
 | Authentication | bcrypt password hashes, JWT (1 hour) sent as `Authorization: Bearer`, `requireAuth` middleware |
 | Validation and security | zod schemas on every request body, `helmet`, CORS limited to the client URL, rate limits (login: 5 failed tries per 15 minutes), 10 kB body limit, `sanitizeFilter` |
-| Third-party APIs | Open-Meteo Geocoding and Forecast; Wikipedia (MediaWiki API) for place photos, descriptions and nearby sights. Both are free and need no API key |
+| Third-party APIs | Open-Meteo Geocoding and Forecast; Wikipedia (MediaWiki API) for place photos, descriptions and nearby sights; Google Maps (embedded map and directions links) with the browser Geolocation API. All free, no API key |
 | Tests | Vitest + Supertest (back end), Vitest + React Testing Library (front end) |
 | Hosting | API on Render, client on Vercel, database on Atlas |
 
@@ -218,6 +221,7 @@ GitHub Actions runs both suites on every push (`.github/workflows/ci.yml`).
 - The API accepts any real date; only the form stops new outings in the past, so the notes of a past outing can still be edited.
 - Small villages may have no Wikipedia article; the app then shows the activity photo. "Nearby to explore" keeps places whose description names a sight (castle, temple, valley…), so it can miss a place or show an odd one.
 - Packing ticks are saved in this browser only, not in the database.
+- The embedded Google map uses Google's keyless `maps?output=embed` address, which Google does not document. If it ever stops working, the **Open in Google Maps** button (Google's documented Maps URLs) still opens the route. Your location is only read after you press **Show the route from where I am** and allow it, and it is only sent to Google inside that map's address.
 
 ## Photos and texts
 
