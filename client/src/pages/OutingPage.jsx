@@ -1,12 +1,26 @@
-import { Link, useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import ForecastPanel from '../components/ForecastPanel.jsx';
+import { apiFetch } from '../api/client.js';
 import { useApi } from '../hooks/useApi.js';
 import { formatDate } from '../utils/dates.js';
 import { activityLabel, placeLabel } from '../utils/format.js';
 
 export default function OutingPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { data: outing, loading, error } = useApi(`/api/outings/${id}`);
+  const [confirming, setConfirming] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
+  async function handleDelete() {
+    try {
+      await apiFetch(`/api/outings/${id}`, { method: 'DELETE' });
+      navigate('/outings');
+    } catch (err) {
+      setDeleteError(err.message);
+    }
+  }
 
   if (loading) {
     return <p className="status">Loading the outing…</p>;
@@ -51,7 +65,27 @@ export default function OutingPage() {
           <Link to={`/outings/${id}/edit`} className="button">
             Edit
           </Link>
+          {!confirming && (
+            <button type="button" className="button button-danger" onClick={() => setConfirming(true)}>
+              Delete
+            </button>
+          )}
         </div>
+
+        {confirming && (
+          <div className="confirm" role="alert">
+            <p>Delete this outing? This cannot be undone.</p>
+            <div className="form-actions">
+              <button type="button" className="button button-danger" onClick={handleDelete}>
+                Yes, delete
+              </button>
+              <button type="button" className="button button-quiet" onClick={() => setConfirming(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+        {deleteError && <p className="error">{deleteError}</p>}
       </article>
     </>
   );
