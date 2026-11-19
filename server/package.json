@@ -1,0 +1,17 @@
+{
+  "name": "meshwar-api",
+  "version": "1.0.0",
+  "description": "REST API for Meshwar, a weather-aware outing planner",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "author": "Wadih Tawk, Alex Achkar, Raymond El-Helou",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^18.0.10",
+    "express": "^5.3.0"
+  }
+}
