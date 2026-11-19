@@ -62,12 +62,13 @@ app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL }));
 app.use(logger);
 app.use(express.json({ limit: '10kb' }));
-app.use('/api', apiLimiter);
-app.use('/api/auth/login', loginLimiter);
 
 app.get('/api/health', (req, res) => {
   res.json({ ok: true });
 });
+
+app.use('/api', apiLimiter);
+app.use('/api/auth/login', loginLimiter);
 
 app.use('/api/auth', authRouter);
 app.use('/api/outings', requireAuth, outingsRouter);
