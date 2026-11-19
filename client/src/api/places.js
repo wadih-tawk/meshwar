@@ -1,5 +1,6 @@
 const WIKI_URL = 'https://en.wikipedia.org/w/api.php';
 const NEAR = 0.3;
+const SIGHTS = ['mosque', 'church', 'cathedral', 'monastery', 'temple', 'castle', 'citadel', 'fortress', 'tower', 'palace', 'mansion', 'museum', 'garden', 'park', 'reserve', 'forest', 'valley', 'mountain', 'lake', 'river', 'waterfall', 'beach', 'bay', 'island', 'cave', 'grotto', 'dam', 'ski', 'resort', 'square', 'market', 'souk', 'site', 'ruins', 'necropolis', 'monument', 'bridge', 'heritage'];
 
 async function getJSON(url) {
   let res;
@@ -18,11 +19,33 @@ function wikiParams(extra) {
   return new URLSearchParams({ action: 'query', format: 'json', formatversion: 2, origin: '*', ...extra });
 }
 
+export function cleanExtract(text) {
+  const start = text.indexOf('(');
+  if (start === -1 || start > 40) {
+    return text;
+  }
+  let depth = 0;
+  for (let i = start; i < text.length; i++) {
+    if (text[i] === '(') {
+      depth++;
+    }
+    if (text[i] === ')') {
+      depth--;
+    }
+    if (depth === 0) {
+      const before = text.slice(0, start).trimEnd();
+      const after = text.slice(i + 1).trimStart();
+      return after.startsWith(',') ? before + after : `${before} ${after}`;
+    }
+  }
+  return text;
+}
+
 function toPlace(page) {
   return {
     title: page.title,
     description: page.description ?? '',
-    extract: page.extract ?? '',
+    extract: cleanExtract(page.extract ?? ''),
     photo: page.thumbnail ? page.thumbnail.source : null,
     url: `https://en.wikipedia.org/?curid=${page.pageid}`,
   };
@@ -54,4 +77,28 @@ export async function getPlaceSummary(place) {
     return null;
   }
   return toPlace(pages[0]);
+}
+
+export async function getNearbyPlaces(place) {
+  const params = wikiParams({
+    generator: 'geosearch',
+    ggscoord: `${place.lat}|${place.lon}`,
+    ggsradius: 10000,
+    ggslimit: 20,
+    prop: 'pageimages|description',
+    piprop: 'thumbnail',
+    pithumbsize: 400,
+  });
+  const data = await getJSON(`${WIKI_URL}?${params}`);
+  const pages = data.query ? data.query.pages : [];
+  return pages.sort((a, b) => a.index - b.index).map(toPlace);
+}
+
+export function isSight(place) {
+  const text = place.description.toLowerCase();
+  return SIGHTS.some(word => text.includes(word));
+}
+
+export function pickNearby(places, mainTitle) {
+  return places.filter(place => place.photo && place.title !== mainTitle && isSight(place)).slice(0, 4);
 }

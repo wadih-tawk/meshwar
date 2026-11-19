@@ -1,11 +1,8 @@
-import { useForecast } from '../hooks/useForecast.js';
 import { getVerdict } from '../utils/verdict.js';
 import { availableFrom, formatDate } from '../utils/dates.js';
-import { formatPercent, formatTemp, formatWind } from '../utils/format.js';
+import { describeWeather, formatPercent, formatTemp, formatWind } from '../utils/format.js';
 
-export default function ForecastPanel({ place, date }) {
-  const { timing, forecast, error, loading, retry } = useForecast(place, date);
-
+export default function ForecastPanel({ date, timing, forecast, error, loading, retry }) {
   if (timing === 'past') {
     return (
       <section className="panel">
@@ -49,10 +46,16 @@ export default function ForecastPanel({ place, date }) {
   }
 
   const verdict = getVerdict(forecast);
+  const weather = describeWeather(forecast.code);
 
   return (
     <section className="panel">
       <h2>Forecast</h2>
+      {weather && (
+        <p className="weather-line">
+          <span className="weather-icon">{weather.icon}</span> {weather.label}
+        </p>
+      )}
       {verdict ? (
         <p className={`verdict verdict-large verdict-${verdict.tone}`}>{verdict.text}</p>
       ) : (

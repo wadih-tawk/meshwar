@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isNear } from './places.js';
+import { cleanExtract, isNear, isSight, pickNearby } from './places.js';
 
 describe('isNear', () => {
   it('accepts an article close to the outing', () => {
@@ -12,5 +12,46 @@ describe('isNear', () => {
 
   it('rejects an article without coordinates', () => {
     expect(isNear({}, 34.43, 35.84)).toBe(false);
+  });
+});
+
+describe('isSight', () => {
+  it('keeps places worth visiting', () => {
+    expect(isSight({ description: 'Castle in Byblos, Lebanon' })).toBe(true);
+    expect(isSight({ description: 'Ski resort in Lebanon' })).toBe(true);
+  });
+
+  it('leaves out districts, villages and battles', () => {
+    expect(isSight({ description: 'District in Keserwan-Jbeil, Lebanon' })).toBe(false);
+    expect(isSight({ description: '1102–1109 siege after the First Crusade' })).toBe(false);
+    expect(isSight({ description: '' })).toBe(false);
+  });
+});
+
+describe('pickNearby', () => {
+  const places = [
+    { title: 'Byblos', description: 'City in Lebanon', photo: 'a.jpg' },
+    { title: 'Byblos Castle', description: 'Castle in Byblos', photo: 'b.jpg' },
+    { title: 'Byblos District', description: 'District in Keserwan-Jbeil', photo: 'c.jpg' },
+    { title: 'Byblos Fossil Museum', description: 'Museum in Byblos', photo: null },
+    { title: 'Temple of the Obelisks', description: 'Temple in Byblos', photo: 'd.jpg' },
+  ];
+
+  it('keeps sights with a photo and leaves out the main place', () => {
+    expect(pickNearby(places, 'Byblos').map(place => place.title)).toEqual(['Byblos Castle', 'Temple of the Obelisks']);
+  });
+});
+
+describe('cleanExtract', () => {
+  it('removes the pronunciation in brackets after the name', () => {
+    expect(cleanExtract('Tripoli ( TRIP-əl-ee; Arabic: طرابلس, pronounced [ta]; see below) is the largest city.')).toBe('Tripoli is the largest city.');
+  });
+
+  it('keeps the comma that follows the brackets', () => {
+    expect(cleanExtract('Byblos ( BIB-loss; Ancient Greek: Βύβλος), also known as Jbeil, is a city.')).toBe('Byblos, also known as Jbeil, is a city.');
+  });
+
+  it('leaves text without early brackets alone', () => {
+    expect(cleanExtract('Faqra is a ski resort.')).toBe('Faqra is a ski resort.');
   });
 });

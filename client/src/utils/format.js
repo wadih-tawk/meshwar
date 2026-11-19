@@ -49,3 +49,37 @@ export function formatPercent(value) {
 export function formatWind(value) {
   return typeof value === 'number' ? `${Math.round(value)} km/h` : '—';
 }
+
+export function describeWeather(code) {
+  if (typeof code !== 'number') {
+    return null;
+  }
+  if (code === 0) {
+    return { icon: '☀️', label: 'Clear sky' };
+  }
+  if (code <= 2) {
+    return { icon: '⛅', label: 'Partly cloudy' };
+  }
+  if (code === 3) {
+    return { icon: '☁️', label: 'Overcast' };
+  }
+  if (code <= 48) {
+    return { icon: '🌫️', label: 'Fog' };
+  }
+  if (code <= 57) {
+    return { icon: '🌦️', label: 'Drizzle' };
+  }
+  if (code <= 67) {
+    return { icon: '🌧️', label: 'Rain' };
+  }
+  if (code <= 77) {
+    return { icon: '🌨️', label: 'Snow' };
+  }
+  if (code <= 82) {
+    return { icon: '🌦️', label: 'Rain showers' };
+  }
+  if (code <= 86) {
+    return { icon: '🌨️', label: 'Snow showers' };
+  }
+  return { icon: '⛈️', label: 'Thunderstorm' };
+}

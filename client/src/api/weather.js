@@ -1,6 +1,6 @@
 const GEO_URL = 'https://geocoding-api.open-meteo.com/v1/search';
 const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
-const DAILY_FIELDS = 'temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max';
+const DAILY_FIELDS = 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max';
 
 async function getJSON(url) {
   let res;
@@ -44,5 +44,6 @@ export async function getForecast(lat, lon, date) {
     min: daily.temperature_2m_min[0],
     rainChance: daily.precipitation_probability_max[0],
     wind: daily.wind_speed_10m_max[0],
+    code: daily.weather_code[0],
   };
 }
