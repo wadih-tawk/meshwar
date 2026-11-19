@@ -1,15 +1,27 @@
 export const ACTIVITIES = [
-  { value: 'hike', label: 'Hike' },
-  { value: 'beach', label: 'Beach' },
-  { value: 'ski', label: 'Ski' },
-  { value: 'picnic', label: 'Picnic' },
-  { value: 'city', label: 'City trip' },
-  { value: 'other', label: 'Other' },
+  { value: 'hike', label: 'Hike', icon: '🥾' },
+  { value: 'beach', label: 'Beach', icon: '🏖️' },
+  { value: 'ski', label: 'Ski', icon: '⛷️' },
+  { value: 'picnic', label: 'Picnic', icon: '🧺' },
+  { value: 'city', label: 'City trip', icon: '🏙️' },
+  { value: 'other', label: 'Other', icon: '📍' },
 ];
 
-export function activityLabel(value) {
+function findActivity(value) {
   const activity = ACTIVITIES.find(item => item.value === value);
-  return activity ? activity.label : 'Other';
+  return activity ? activity : ACTIVITIES[ACTIVITIES.length - 1];
+}
+
+export function activityLabel(value) {
+  return findActivity(value).label;
+}
+
+export function activityIcon(value) {
+  return findActivity(value).icon;
+}
+
+export function activityPhoto(value) {
+  return `/photos/${findActivity(value).value}.jpg`;
 }
 
 export function placeLabel(place) {

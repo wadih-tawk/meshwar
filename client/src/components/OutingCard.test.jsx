@@ -46,3 +46,13 @@ it('shows loading instead of crashing when there is no forecast yet', () => {
   renderCard({ timing: 'ready', forecast: null });
   expect(screen.getByText('Loading forecast…')).toBeInTheDocument();
 });
+
+it('shows the place photo, or the activity photo when there is none', () => {
+  renderCard({ timing: 'later', forecast: null, photo: 'https://upload.wikimedia.org/byblos.jpg' });
+  expect(screen.getByRole('img')).toHaveAttribute('src', 'https://upload.wikimedia.org/byblos.jpg');
+});
+
+it('uses the activity photo when Wikipedia has no photo', () => {
+  renderCard({ timing: 'later', forecast: null, photo: null });
+  expect(screen.getByRole('img')).toHaveAttribute('src', '/photos/hike.jpg');
+});
