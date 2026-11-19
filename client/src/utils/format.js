@@ -18,3 +18,22 @@ export function placeLabel(place) {
   }
   return `${place.name}, ${place.country}`;
 }
+
+export function formatTemp(value) {
+  return typeof value === 'number' ? `${Math.round(value)} °C` : '—';
+}
+
+export function formatRange(min, max) {
+  if (typeof min !== 'number' || typeof max !== 'number') {
+    return '—';
+  }
+  return `${Math.round(min)}–${Math.round(max)} °C`;
+}
+
+export function formatPercent(value) {
+  return typeof value === 'number' ? `${Math.round(value)}%` : '—';
+}
+
+export function formatWind(value) {
+  return typeof value === 'number' ? `${Math.round(value)} km/h` : '—';
+}

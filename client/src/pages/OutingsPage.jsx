@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import OutingCard from '../components/OutingCard.jsx';
+import OutingListItem from '../components/OutingListItem.jsx';
 import { useApi } from '../hooks/useApi.js';
 import { isPast } from '../utils/dates.js';
 
@@ -44,9 +44,7 @@ export default function OutingsPage() {
           <h2 className="section-title">Upcoming</h2>
           <ul className="cards">
             {upcoming.map(outing => (
-              <li key={outing._id}>
-                <OutingCard outing={outing} />
-              </li>
+              <OutingListItem key={outing._id} outing={outing} />
             ))}
           </ul>
         </section>
@@ -62,9 +60,7 @@ export default function OutingsPage() {
           {showPast && (
             <ul className="cards">
               {past.map(outing => (
-                <li key={outing._id}>
-                  <OutingCard outing={outing} />
-                </li>
+                <OutingListItem key={outing._id} outing={outing} />
               ))}
             </ul>
           )}
