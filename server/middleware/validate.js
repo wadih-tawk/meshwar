@@ -17,6 +17,10 @@ export const ProfileInput = z.object({
   bio: z.string('Bio must be text').trim().max(300, 'Bio must be at most 300 characters').default(''),
 });
 
+export const FriendRequestInput = z.object({
+  userId: z.string('Choose a person').regex(/^[a-f0-9]{24}$/, 'Invalid user id'),
+});
+
 export const OutingInput = z.object({
   title: z.string('Title is required').trim().min(1, 'Title is required').max(80, 'Title must be at most 80 characters'),
   activity: z.enum(ACTIVITIES, `Activity must be one of: ${ACTIVITIES.join(', ')}`),

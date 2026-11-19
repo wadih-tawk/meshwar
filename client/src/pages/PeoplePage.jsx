@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import Avatar from '../components/Avatar.jsx';
+import FriendsPanel from '../components/FriendsPanel.jsx';
+import PersonLink from '../components/PersonLink.jsx';
 import { apiFetch } from '../api/client.js';
 
 export default function PeoplePage() {
@@ -48,7 +48,11 @@ export default function PeoplePage() {
   return (
     <>
       <h1>People</h1>
-      <p className="muted">Find friends by name and see where they like to go.</p>
+      <p className="muted">Your friends, your friend requests, and people to add.</p>
+      <div className="people-layout">
+        <FriendsPanel />
+      </div>
+      <h2 className="section-title">Find people</h2>
       <div className="field people-search">
         <label htmlFor="people-search">Search by name</label>
         <input id="people-search" type="search" value={query} onChange={handleChange} maxLength={50} placeholder="Type at least 2 letters" autoComplete="off" />
@@ -59,13 +63,7 @@ export default function PeoplePage() {
       <ul className="people">
         {people.map(person => (
           <li key={person.id}>
-            <Link to={`/people/${person.id}`} className="person">
-              <Avatar name={person.name} url={person.avatarUrl} />
-              <span>
-                <strong>{person.name}</strong>
-                {person.bio && <span className="small">{person.bio}</span>}
-              </span>
-            </Link>
+            <PersonLink person={person} />
           </li>
         ))}
       </ul>

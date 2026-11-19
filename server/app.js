@@ -7,6 +7,7 @@ import authRouter from './routes/auth.js';
 import outingsRouter from './routes/outings.js';
 import usersRouter from './routes/users.js';
 import imagesRouter from './routes/images.js';
+import friendsRouter from './routes/friends.js';
 import { requireAuth } from './middleware/requireAuth.js';
 
 const app = express();
@@ -84,6 +85,7 @@ app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', authRouter);
 app.use('/api/outings', requireAuth, outingsRouter);
 app.use('/api/users', requireAuth, usersRouter);
+app.use('/api/friends', requireAuth, friendsRouter);
 
 app.use(notFound);
 app.use(handleErrors);

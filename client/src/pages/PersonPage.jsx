@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import Avatar from '../components/Avatar.jsx';
+import FriendButton from '../components/FriendButton.jsx';
 import { useAuth } from '../auth/AuthContext.js';
 import { useApi } from '../hooks/useApi.js';
 import { formatDate } from '../utils/dates.js';
@@ -32,6 +33,7 @@ export default function PersonPage() {
       <h1>{person.name}</h1>
       <p className="muted">Joined {formatDate(person.joinedAt.slice(0, 10))}</p>
       {person.bio ? <p className="bio">{person.bio}</p> : <p className="muted">No bio yet.</p>}
+      {!isMe && <FriendButton key={person.id} personId={person.id} />}
       {isMe && (
         <Link to="/me" className="button button-quiet">
           Edit my profile

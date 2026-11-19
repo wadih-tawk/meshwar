@@ -24,6 +24,7 @@ A weather-aware outing planner for students in Lebanon. Save a hike, a beach day
 - **Filter My outings by activity** (hike, beach, ski, picnic, city).
 - The forecast shows a weather icon and label ("Partly cloudy", "Rain"…).
 - **Profiles:** a name, a bio and a profile photo. Search people by name and open their public profile (no email shown). You can only edit your own profile.
+- **Friends:** send a friend request from someone's profile; they accept or decline it on the People page. Either friend can end the friendship.
 - Edit and delete your own outings, with a confirm step before deleting.
 - Protection: outing pages redirect to the login page without a token. The API answers 401 without a valid token and 404 for someone else's outing.
 - Responsive layout for phone and desktop.
@@ -111,6 +112,10 @@ Index: `{ userId: 1, date: 1 }`, which matches the "My outings" query.
 | `GET /api/users/me` · `PUT /api/users/me` | yes | 200, my profile (with my email) | 400, 401 |
 | `PUT /api/users/me/avatar` (form field `photo`) · `DELETE /api/users/me/avatar` | yes | 200 · 204 | 400 not a photo, 401, 413 over 5 MB, 429 |
 | `GET /api/users?q=name` · `GET /api/users/:id` | yes | 200, public profiles (no email) | 400, 401, 404 |
+| `GET /api/friends` · `GET /api/friends/status/:userId` | yes | 200, my friends and requests · my link with that person | 400, 401 |
+| `POST /api/friends/requests` `{ userId }` | yes | 201 | 400, 401, 404, 409 already linked, 429 |
+| `POST /api/friends/requests/:id/accept` | yes (the receiver only) | 200 | 400, 401, 404 |
+| `DELETE /api/friends/requests/:id` (decline or cancel) · `DELETE /api/friends/:userId` (unfriend) | yes (one of the two people) | 204 | 400, 401, 404 |
 | `GET /api/images/:id?expires=…&sig=…` | signed link | 200, the JPEG | 403 bad or expired link, 404 |
 
 ### Front-end routes
