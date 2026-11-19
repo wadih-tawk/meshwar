@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 
 const app = express();
 
@@ -20,6 +21,7 @@ function handleErrors(err, req, res, next) {
   res.status(500).json({ error: 'Internal server error' });
 }
 
+app.use(cors({ origin: process.env.CLIENT_URL }));
 app.use(logger);
 app.use(express.json());
 
