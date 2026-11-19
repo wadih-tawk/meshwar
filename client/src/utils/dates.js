@@ -35,3 +35,20 @@ export function formatDate(date) {
 export function formatShortDate(date) {
   return dayjs(date).format('ddd D MMM');
 }
+
+export function nextSaturday() {
+  const now = dayjs();
+  const daysToGo = (6 - now.day() + 7) % 7;
+  return now.add(daysToGo, 'day').format('YYYY-MM-DD');
+}
+
+export function countdownLabel(date) {
+  const days = dayjs(date).diff(dayjs(today()), 'day');
+  if (days === 0) {
+    return 'Today';
+  }
+  if (days === 1) {
+    return 'Tomorrow';
+  }
+  return `In ${days} days`;
+}

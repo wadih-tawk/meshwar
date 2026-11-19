@@ -1,4 +1,4 @@
-import { Link, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.js';
 
 export default function Layout() {
@@ -13,10 +13,13 @@ export default function Layout() {
             Meshwar
           </Link>
           <nav className="topbar-actions">
-            <Link to="/outings/new" className="button">
+            <NavLink to="/outings" end className="nav-link">
+              My outings
+            </NavLink>
+            <Link to="/outings/new" className="button button-light">
               + New
             </Link>
-            <button type="button" className="button button-quiet" onClick={logout}>
+            <button type="button" className="button button-ghost" onClick={logout}>
               Log out
             </button>
           </nav>
@@ -25,6 +28,9 @@ export default function Layout() {
       <main className="page">
         <Outlet />
       </main>
+      <footer className="footer">
+        <p>Meshwar · Weather by Open-Meteo · Places and photos from Wikipedia · Maps by Google</p>
+      </footer>
     </>
   );
 }

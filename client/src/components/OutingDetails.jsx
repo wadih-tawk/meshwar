@@ -41,7 +41,7 @@ export default function OutingDetails({ outing }) {
         )}
 
         <header className="outing-head">
-          <p className="activity-tag">
+          <p className={`activity-tag activity-${outing.activity}`}>
             {activityIcon(outing.activity)} {activityLabel(outing.activity)}
           </p>
           <h1>{outing.title}</h1>

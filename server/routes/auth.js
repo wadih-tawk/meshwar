@@ -25,7 +25,10 @@ authRouter.post('/login', validate(LoginInput), async (req, res) => {
   const ok = user && (await bcrypt.compare(password, user.passwordHash));
   const error = 'Invalid email or password';
   if (!ok) return res.status(401).json({ error });
-  res.json({ token: signToken(user) });
+  res.json({
+    token: signToken(user),
+    user: { id: user._id, name: user.name, email: user.email },
+  });
 });
 
 export default authRouter;
