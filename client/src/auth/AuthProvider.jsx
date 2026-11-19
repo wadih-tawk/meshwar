@@ -37,6 +37,11 @@ export function AuthProvider({ children }) {
     saveSession(data);
   }
 
+  function updateUser(profile) {
+    localStorage.setItem('user', JSON.stringify(profile));
+    setUser(profile);
+  }
+
   function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -55,6 +60,24 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('auth:expired', handleExpired);
   }, []);
 
-  const value = { token, user, login, signup, logout };
+  useEffect(() => {
+    if (!token) {
+      return;
+    }
+    let ignore = false;
+    apiFetch('/api/users/me')
+      .then(profile => {
+        if (!ignore) {
+          localStorage.setItem('user', JSON.stringify(profile));
+          setUser(profile);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      ignore = true;
+    };
+  }, [token]);
+
+  const value = { token, user, login, signup, logout, updateUser };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

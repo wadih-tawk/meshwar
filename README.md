@@ -23,6 +23,7 @@ A weather-aware outing planner for students in Lebanon. Save a hike, a beach day
 - **Packing checklist** on each outing: items for the activity, plus a warm jacket when it will be cold and an umbrella when rain is likely. Ticked items are remembered in the browser.
 - **Filter My outings by activity** (hike, beach, ski, picnic, city).
 - The forecast shows a weather icon and label ("Partly cloudy", "Rain"…).
+- **Profiles:** a name, a bio and a profile photo. Search people by name and open their public profile (no email shown). You can only edit your own profile.
 - Edit and delete your own outings, with a confirm step before deleting.
 - Protection: outing pages redirect to the login page without a token. The API answers 401 without a valid token and 404 for someone else's outing.
 - Responsive layout for phone and desktop.
@@ -107,6 +108,10 @@ Index: `{ userId: 1, date: 1 }`, which matches the "My outings" query.
 | `GET /api/outings/:id` | yes | 200 | 400, 401, 404 |
 | `PUT /api/outings/:id` | yes | 200, the updated outing | 400, 401, 404 |
 | `DELETE /api/outings/:id` | yes | 204 | 400, 401, 404 |
+| `GET /api/users/me` · `PUT /api/users/me` | yes | 200, my profile (with my email) | 400, 401 |
+| `PUT /api/users/me/avatar` (form field `photo`) · `DELETE /api/users/me/avatar` | yes | 200 · 204 | 400 not a photo, 401, 413 over 5 MB, 429 |
+| `GET /api/users?q=name` · `GET /api/users/:id` | yes | 200, public profiles (no email) | 400, 401, 404 |
+| `GET /api/images/:id?expires=…&sig=…` | signed link | 200, the JPEG | 403 bad or expired link, 404 |
 
 ### Front-end routes
 
@@ -213,6 +218,15 @@ GitHub Actions runs both suites on every push (`.github/workflows/ci.yml`).
 - Passwords are stored only as bcrypt hashes (cost 12). Login gives the same message for an unknown email and a wrong password.
 - The owner of an outing always comes from the token, never from the request body. zod drops unknown keys, so `userId` or `role` in a body is ignored.
 - Someone else's outing answers 404, not 403, so the API does not confirm that the id exists.
+
+### Photo uploads
+
+- Only one photo per request, up to 5 MB, with a JPG, PNG or WebP type **and** extension. These two checks are only a first filter, because the browser (or an attacker) chooses them.
+- The real check is `sharp`: it reads the format from the file's own bytes, refuses anything that is not a JPG, PNG or WebP (SVG, GIF, PHP or HTML files fail here even when named `.jpg`), refuses images over 40 million pixels, and **re-encodes** every photo into a new, small JPEG. Comments, EXIF data and anything hidden inside the file do not survive, so a photo carrying PHP code comes out as a clean picture.
+- The file name sent by the browser is never stored or shown; each photo gets a new database id.
+- Photos are stored in MongoDB and served by the API with `X-Content-Type-Options: nosniff`, so a browser never runs them as a script.
+- `<img>` tags cannot send our login token, so photo links are **signed and expire** within two hours (an HMAC of the image id and the expiry time, made with the server secret). The API only gives a link to someone allowed to see the photo; a changed, swapped or expired link gets 403.
+- Uploads are limited to 30 per hour per user. The automated tests try these attacks (`server/tests/profiles.test.js`).
 
 ### Known limitations
 

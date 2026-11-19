@@ -5,12 +5,13 @@ export async function apiFetch(path, options = {}) {
     throw new Error('VITE_API_URL is not set, so the app does not know where the API is.');
   }
   const token = localStorage.getItem('token');
+  const isForm = options.body instanceof FormData;
   let res;
   try {
     res = await fetch(API_URL + path, {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
+        ...(!isForm && { 'Content-Type': 'application/json' }),
         ...(token && { Authorization: `Bearer ${token}` }),
       },
     });
@@ -25,4 +26,8 @@ export async function apiFetch(path, options = {}) {
     throw new Error(data.error || `Request failed (${res.status})`);
   }
   return res.status === 204 ? null : res.json();
+}
+
+export function imageSrc(url) {
+  return url ? API_URL + url : null;
 }

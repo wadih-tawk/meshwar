@@ -5,8 +5,6 @@ import app from './app.js';
 
 const PORT = process.env.PORT || 3000;
 
-mongoose.set('sanitizeFilter', true);
-
 try {
   await mongoose.connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
   console.log('connected to MongoDB');

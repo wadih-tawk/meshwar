@@ -9,6 +9,9 @@ import OutingPage from './pages/OutingPage.jsx';
 import EditOutingPage from './pages/EditOutingPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 import IdeaPage from './pages/IdeaPage.jsx';
+import ProfilePage from './pages/ProfilePage.jsx';
+import PeoplePage from './pages/PeoplePage.jsx';
+import PersonPage from './pages/PersonPage.jsx';
 
 export default function App() {
   return (
@@ -23,6 +26,9 @@ export default function App() {
           <Route path="/outings/:id" element={<OutingPage />} />
           <Route path="/outings/:id/edit" element={<EditOutingPage />} />
           <Route path="/ideas/:slug" element={<IdeaPage />} />
+          <Route path="/me" element={<ProfilePage />} />
+          <Route path="/people" element={<PeoplePage />} />
+          <Route path="/people/:id" element={<PersonPage />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFoundPage />} />

@@ -1,12 +1,17 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import authRouter from './routes/auth.js';
 import outingsRouter from './routes/outings.js';
+import usersRouter from './routes/users.js';
+import imagesRouter from './routes/images.js';
 import { requireAuth } from './middleware/requireAuth.js';
 
 const app = express();
+
+mongoose.set('sanitizeFilter', true);
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60_000,
@@ -34,6 +39,10 @@ function notFound(req, res) {
 function handleErrors(err, req, res, next) {
   if (err.type === 'entity.parse.failed') {
     return res.status(400).json({ error: 'Malformed JSON in request body' });
+  }
+  if (err.name === 'MulterError') {
+    const tooBig = err.code === 'LIMIT_FILE_SIZE';
+    return res.status(tooBig ? 413 : 400).json({ error: tooBig ? 'Photos must be 5 MB or smaller' : 'Send one photo in the "photo" field' });
   }
   if (err.type === 'entity.too.large') {
     return res.status(413).json({ error: 'Request body is too large' });
@@ -67,11 +76,14 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true });
 });
 
+app.use('/api/images', imagesRouter);
+
 app.use('/api', apiLimiter);
 app.use('/api/auth/login', loginLimiter);
 
 app.use('/api/auth', authRouter);
 app.use('/api/outings', requireAuth, outingsRouter);
+app.use('/api/users', requireAuth, usersRouter);
 
 app.use(notFound);
 app.use(handleErrors);

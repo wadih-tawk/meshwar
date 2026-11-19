@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { ACTIVITIES } from '../models/Outing.js';
 
 export const SignupInput = z.object({
-  name: z.string('Name is required').trim().min(1, 'Name is required').max(50, 'Name must be at most 50 characters'),
+  name: z.string('Name is required').trim().min(1, 'Name is required').max(50, 'Name must be at most 50 characters').regex(/^[^<>\u0000-\u001f]*$/, 'Name cannot contain < > or line breaks'),
   email: z.string('Email is required').trim().toLowerCase().email('Enter a valid email'),
   password: z.string('Password is required').min(8, 'Password must be at least 8 characters').max(72, 'Password must be at most 72 characters'),
 });
@@ -10,6 +10,11 @@ export const SignupInput = z.object({
 export const LoginInput = z.object({
   email: z.string('Email is required').trim().toLowerCase().min(1, 'Email is required'),
   password: z.string('Password is required').min(1, 'Password is required'),
+});
+
+export const ProfileInput = z.object({
+  name: z.string('Name is required').trim().min(1, 'Name is required').max(50, 'Name must be at most 50 characters').regex(/^[^<>\u0000-\u001f]*$/, 'Name cannot contain < > or line breaks'),
+  bio: z.string('Bio must be text').trim().max(300, 'Bio must be at most 300 characters').default(''),
 });
 
 export const OutingInput = z.object({
