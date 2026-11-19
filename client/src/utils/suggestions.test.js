@@ -33,3 +33,12 @@ describe('idea content', () => {
     });
   });
 });
+
+describe('idea stops', () => {
+  it('gives every stop of an idea its own place on the map', () => {
+    SUGGESTIONS.filter(idea => idea.stops).forEach(idea => {
+      const points = idea.stops.map(stop => `${stop.lat},${stop.lon}`);
+      expect(new Set(points).size, idea.slug).toBe(points.length);
+    });
+  });
+});

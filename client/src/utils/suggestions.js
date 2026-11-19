@@ -114,9 +114,9 @@ export const SUGGESTIONS = [
     ],
     stops: [
       { name: 'Château Ksara', lat: 33.8263, lon: 35.8923, note: 'Founded in 1857 by Jesuit priests near Zahlé. Tours and tastings include its natural caves, found in 1898 and about 2 km long, where the wine is aged.' },
-      { name: 'Massaya', lat: 33.7997, lon: 35.8689, note: 'A winery and arak distillery run by the Ghosn brothers on the Tanaïl estate, with vineyards and a restaurant.' },
+      { name: 'Massaya', lat: 33.7961, lon: 35.8721, note: 'A winery and arak distillery run by the Ghosn brothers on the Tanaïl estate, with vineyards and a restaurant.' },
       { name: 'Château Héritage', lat: 33.7985, lon: 35.8256, note: 'A family winery started by the Touma family in Kab Elias in 1888, listed among the World’s 50 Best Vineyards in 2025. Book the tour ahead.' },
-      { name: 'Domaine de Taanayel', lat: 33.7997, lon: 35.8689, note: 'A large estate run by the NGO arcenciel, with lakes, a dairy farm and paths for walking and cycling. A calm stop between two tastings.' },
+      { name: 'Domaine de Taanayel', lat: 33.7912, lon: 35.8673, note: 'A large estate run by the NGO arcenciel, with lakes, a dairy farm and paths for walking and cycling. A calm stop between two tastings.' },
     ],
     eat: ['Massaya has a restaurant on its estate.', 'Zahlé is known for its restaurants along the Berdawni river.'],
     stay: ['Chtaura Park Hotel: a five-star hotel in Chtaura, in the middle of the valley.', 'Massabki Hotel: a boutique hotel in Chtaura that opened in 1920, next to the river and its own oak forest.'],
