@@ -3,9 +3,15 @@ import { ACTIVITIES } from '../models/Outing.js';
 
 const id = message => z.string(message).regex(/^[a-f0-9]{24}$/, message);
 const oneLineBreak = text => text.replace(/\r\n/g, '\n');
+const personName = z
+  .string('Name is required')
+  .trim()
+  .min(1, 'Name is required')
+  .max(50, 'Name must be at most 50 characters')
+  .regex(/^[^<>\u0000-\u001f\u007f-\u009f\p{Cf}]*$/u, 'Name cannot contain < >, line breaks or invisible characters');
 
 export const SignupInput = z.object({
-  name: z.string('Name is required').trim().min(1, 'Name is required').max(50, 'Name must be at most 50 characters').regex(/^[^<>\u0000-\u001f]*$/, 'Name cannot contain < > or line breaks'),
+  name: personName,
   email: z.string('Email is required').trim().toLowerCase().email('Enter a valid email'),
   password: z.string('Password is required').min(8, 'Password must be at least 8 characters').max(72, 'Password must be at most 72 characters'),
 });
@@ -16,7 +22,7 @@ export const LoginInput = z.object({
 });
 
 export const ProfileInput = z.object({
-  name: z.string('Name is required').trim().min(1, 'Name is required').max(50, 'Name must be at most 50 characters').regex(/^[^<>\u0000-\u001f]*$/, 'Name cannot contain < > or line breaks'),
+  name: personName,
   bio: z.string('Bio must be text').trim().max(300, 'Bio must be at most 300 characters').default(''),
 });
 

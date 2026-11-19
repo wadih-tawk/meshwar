@@ -3,6 +3,7 @@ import request from 'supertest';
 import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import app from '../app.js';
+import Image from '../models/Image.js';
 import { signUp, startDatabase, stopDatabase } from './setup-db.js';
 
 let alice;
@@ -59,6 +60,13 @@ describe('profiles', () => {
     expect(res.body.email).toBe('alice@test.com');
     expect(res.body.passwordHash).toBeUndefined();
     expect(res.body.avatarUrl).toBe(null);
+  });
+
+  it('refuses names with invisible or direction-changing characters', async () => {
+    for (const name of ['alice\u202e', 'al\u200bice', 'bob\u0085']) {
+      const res = await request(app).put('/api/users/me').set('Authorization', `Bearer ${alice.token}`).send({ name, bio: '' });
+      expect(res.status, JSON.stringify(name)).toBe(400);
+    }
   });
 
   it('refuses HTML in a name and a bio longer than 300 characters', async () => {
@@ -126,6 +134,26 @@ describe('photo uploads', () => {
       const res = await upload(bob.token, buffer, filename, contentType);
       expect(res.status, `${filename} as ${contentType}`).toBe(400);
     }
+  });
+
+  it('answers a broken upload with 400, not a server error', async () => {
+    const cut = await request(app)
+      .put('/api/users/me/avatar')
+      .set('Authorization', `Bearer ${bob.token}`)
+      .set('Content-Type', 'multipart/form-data; boundary=XYZ')
+      .send('--XYZ\r\nContent-Disposition: form-data; name="photo"; filename="a.png"\r\nContent-Type: image/png\r\n\r\nabc');
+    expect(cut.status).toBe(400);
+    const noBoundary = await request(app).put('/api/users/me/avatar').set('Authorization', `Bearer ${bob.token}`).set('Content-Type', 'multipart/form-data').send('x');
+    expect(noBoundary.status).toBe(400);
+  });
+
+  it('stops a user who already keeps 100 photos', async () => {
+    const hoarder = await signUp('Hoarder', 'hoarder@test.com');
+    const photos = Array.from({ length: 100 }, () => ({ ownerId: hoarder.id, purpose: 'post', data: Buffer.from('x') }));
+    await Image.insertMany(photos);
+    const res = await upload(hoarder.token, await png(), 'one-more.png', 'image/png');
+    expect(res.status).toBe(403);
+    expect(res.body.error).toMatch(/100 photos/);
   });
 
   it('refuses photos bigger than 5 MB', async () => {

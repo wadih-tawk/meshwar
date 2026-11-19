@@ -3,10 +3,13 @@ import bcrypt from 'bcrypt';
 import User from '../models/User.js';
 import { signToken } from '../auth/token.js';
 import { validate, SignupInput, LoginInput } from '../middleware/validate.js';
+import { ipLimiter } from '../middleware/limits.js';
 
 const authRouter = express.Router();
 
-authRouter.post('/signup', validate(SignupInput), async (req, res) => {
+const signupLimiter = ipLimiter(60, 20, 'new accounts from this network');
+
+authRouter.post('/signup', signupLimiter, validate(SignupInput), async (req, res) => {
   const { name, email, password } = req.body;
   if (await User.findOne({ email })) {
     return res.status(409).json({ error: 'Email already registered' });

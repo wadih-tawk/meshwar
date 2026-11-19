@@ -2,7 +2,6 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
 import authRouter from './routes/auth.js';
 import outingsRouter from './routes/outings.js';
 import usersRouter from './routes/users.js';
@@ -13,23 +12,13 @@ import commentsRouter from './routes/comments.js';
 import messagesRouter from './routes/messages.js';
 import storiesRouter from './routes/stories.js';
 import { requireAuth } from './middleware/requireAuth.js';
+import { ipLimiter, loginLimiter } from './middleware/limits.js';
 
 const app = express();
 
 mongoose.set('sanitizeFilter', true);
 
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60_000,
-  limit: 300,
-  message: { error: 'Too many requests, try again later' },
-});
 
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60_000,
-  limit: 5,
-  skipSuccessfulRequests: true,
-  message: { error: 'Too many login attempts, try again in 15 minutes' },
-});
 
 function logger(req, res, next) {
   const time = new Date().toLocaleTimeString();
@@ -81,10 +70,10 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true });
 });
 
-app.use('/api/images', imagesRouter);
+app.use('/api/images', ipLimiter(15, 2000, 'image requests'), imagesRouter);
 
-app.use('/api', apiLimiter);
-app.use('/api/auth/login', loginLimiter);
+app.use('/api', ipLimiter(15, 300, 'requests'));
+app.use('/api/auth/login', ipLimiter(15, 50, 'failed logins from this network', true), loginLimiter());
 
 app.use('/api/auth', authRouter);
 app.use('/api/outings', requireAuth, outingsRouter);

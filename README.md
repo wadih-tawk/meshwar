@@ -42,7 +42,7 @@ A weather-aware outing planner for students in Lebanon. Save a hike, a beach day
 | Back end | Node.js + Express 5 REST API |
 | Database | MongoDB Atlas with Mongoose (collections `users` and `outings`) |
 | Authentication | bcrypt password hashes, JWT (1 hour) sent as `Authorization: Bearer`, `requireAuth` middleware |
-| Validation and security | zod schemas on every request body, `helmet`, CORS limited to the client URL, rate limits (login: 5 failed tries per 15 minutes), 10 kB body limit, `sanitizeFilter` |
+| Validation and security | zod schemas on every request body, `helmet`, CORS limited to the client URL, rate limits (see below), 10 kB body limit, `sanitizeFilter` |
 | Third-party APIs | Open-Meteo Geocoding and Forecast; Wikipedia (MediaWiki API) for place photos, descriptions and nearby sights; Google Maps (embedded map and directions links) with the browser Geolocation API. All free, no API key |
 | Tests | Vitest + Supertest (back end), Vitest + React Testing Library (front end) |
 | Hosting | API on Render, client on Vercel, database on Atlas |
@@ -247,12 +247,28 @@ GitHub Actions runs both suites on every push (`.github/workflows/ci.yml`).
 - Photos are stored in MongoDB and served by the API with `X-Content-Type-Options: nosniff`, so a browser never runs them as a script.
 - `<img>` tags cannot send our login token, so photo links are **signed and expire** within two hours (an HMAC of the image id and the expiry time, made with the server secret). The API only gives a link to someone allowed to see the photo; a changed, swapped or expired link gets 403.
 - Story photos get the same 24-hour expiry as their story. A MongoDB **TTL index** deletes both automatically (MongoDB checks about once a minute), and the API also hides a story the moment it expires.
-- Uploads are limited to 30 per hour per user. The automated tests try these attacks (`server/tests/profiles.test.js`).
+- Each user can keep at most 100 photos. The automated tests try these attacks (`server/tests/profiles.test.js`).
+
+### Rate limits
+
+| What | Limit | Counted per |
+|---|---|---|
+| Any API request | 300 per 15 min | network (IP address) |
+| Failed logins | 5 per 15 min | network **and** email, so one person guessing a password does not lock out everyone on the same Wi-Fi |
+| Failed logins | 50 per 15 min | network, to slow down guessing many accounts |
+| New accounts | 20 per hour | network |
+| Photo uploads (posts, stories, profile photo) | 30 per hour per user, and 60 per hour per network | user and network, so making new accounts does not give more uploads |
+| Friend requests · comments · likes · shares | 30 per hour · 20 per 10 min · 120 per 10 min · 30 per hour | user |
+| Photos (`/api/images`) | 2000 per 15 min | network (high, because one feed page shows many photos) |
+
+A request over a limit gets **429 Too Many Requests**. `server/tests/limits.test.js` and `server/tests/attacks.test.js` (an IDOR matrix, forged and expired tokens on every route, and a check that no email or password hash leaks) run on every push.
 
 ### Known limitations
 
 - A photo link that was already handed out keeps working until it expires (at most two hours), even if its post is hidden or its owner unfriends you. New links are only given to people allowed to see the post.
 - The feed shows the newest 30 posts of each group; there is no "load more" yet.
+- Logging out removes the token from the browser, but the token itself stays valid until it expires (one hour). There is no server-side list of revoked tokens.
+- Names do not have to be unique, like on most social apps. Profiles are told apart by their photo and their link; invisible and direction-changing characters are refused in names.
 
 - Signup answers "Email already registered", and a login with an unknown email answers faster than one with a wrong password, so someone could find out whether an email has an account. The login rate limit slows this down.
 - bcrypt only uses the first 72 bytes of a password. Very long passwords with accented letters are cut silently.
