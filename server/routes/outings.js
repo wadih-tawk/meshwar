@@ -1,6 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import Outing from '../models/Outing.js';
+import { validate, OutingInput } from '../middleware/validate.js';
 
 const router = express.Router();
 
@@ -16,9 +17,8 @@ router.get('/', async (req, res) => {
   res.json(outings);
 });
 
-router.post('/', async (req, res) => {
-  const { title, activity, place, date, notes } = req.body;
-  const outing = await Outing.create({ title, activity, place, date, notes, userId: req.userId });
+router.post('/', validate(OutingInput), async (req, res) => {
+  const outing = await Outing.create({ ...req.body, userId: req.userId });
   res.status(201).json(outing);
 });
 
@@ -28,11 +28,10 @@ router.get('/:id', checkId, async (req, res) => {
   res.json(outing);
 });
 
-router.put('/:id', checkId, async (req, res) => {
-  const { title, activity, place, date, notes } = req.body;
+router.put('/:id', checkId, validate(OutingInput), async (req, res) => {
   const filter = { _id: req.params.id, userId: req.userId };
   const options = { returnDocument: 'after', runValidators: true };
-  const outing = await Outing.findOneAndUpdate(filter, { title, activity, place, date, notes }, options);
+  const outing = await Outing.findOneAndUpdate(filter, req.body, options);
   if (!outing) return res.status(404).json({ error: 'Outing not found' });
   res.json(outing);
 });
