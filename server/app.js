@@ -12,7 +12,7 @@ import commentsRouter from './routes/comments.js';
 import messagesRouter from './routes/messages.js';
 import storiesRouter from './routes/stories.js';
 import { requireAuth } from './middleware/requireAuth.js';
-import { ipLimiter, loginLimiter } from './middleware/limits.js';
+import { ipLimiter, loginLimiters } from './middleware/limits.js';
 
 const app = express();
 
@@ -73,7 +73,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/images', ipLimiter(15, 2000, 'image requests'), imagesRouter);
 
 app.use('/api', ipLimiter(15, 300, 'requests'));
-app.use('/api/auth/login', ipLimiter(15, 50, 'failed logins from this network', true), loginLimiter());
+app.use('/api/auth/login', loginLimiters());
 
 app.use('/api/auth', authRouter);
 app.use('/api/outings', requireAuth, outingsRouter);

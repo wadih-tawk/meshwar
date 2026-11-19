@@ -255,8 +255,9 @@ GitHub Actions runs both suites on every push (`.github/workflows/ci.yml`).
 |---|---|---|
 | Any API request | 300 per 15 min | network (IP address) |
 | Failed logins | 5 per 15 min | network **and** email, so one person guessing a password does not lock out everyone on the same Wi-Fi |
-| Failed logins | 50 per 15 min | network, to slow down guessing many accounts |
-| New accounts | 20 per hour | network |
+| Failed logins | 20 per 15 min | network, to slow down guessing many accounts |
+| Failed logins | 20 per hour | account (email), from any network, so spreading guesses over many IP addresses does not help |
+| New accounts | 20 created per hour | network (failed tries do not count) |
 | Photo uploads (posts, stories, profile photo) | 30 per hour per user, and 60 per hour per network | user and network, so making new accounts does not give more uploads |
 | Friend requests · comments · likes · shares | 30 per hour · 20 per 10 min · 120 per 10 min · 30 per hour | user |
 | Photos (`/api/images`) | 2000 per 15 min | network (high, because one feed page shows many photos) |
@@ -268,6 +269,7 @@ A request over a limit gets **429 Too Many Requests**. `server/tests/limits.test
 - A photo link that was already handed out keeps working until it expires (at most two hours), even if its post is hidden or its owner unfriends you. New links are only given to people allowed to see the post.
 - The feed shows the newest 30 posts of each group; there is no "load more" yet.
 - Logging out removes the token from the browser, but the token itself stays valid until it expires (one hour). There is no server-side list of revoked tokens.
+- Someone who knows your email can block logins to your account for up to an hour by failing 20 times. We accept this so that nobody can keep guessing passwords from many computers.
 - Names do not have to be unique, like on most social apps. Profiles are told apart by their photo and their link; invisible and direction-changing characters are refused in names.
 
 - Signup answers "Email already registered", and a login with an unknown email answers faster than one with a wrong password, so someone could find out whether an email has an account. The login rate limit slows this down.

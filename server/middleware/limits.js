@@ -4,6 +4,10 @@ function message(what, minutes) {
   return { error: `Too many ${what}. Try again in ${minutes} minutes.` };
 }
 
+function emailOf(req) {
+  return typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+}
+
 export function userLimiter(minutes, limit, what) {
   return rateLimit({
     windowMs: minutes * 60_000,
@@ -13,24 +17,31 @@ export function userLimiter(minutes, limit, what) {
   });
 }
 
-export function ipLimiter(minutes, limit, what, onlyFailures = false) {
+export function ipLimiter(minutes, limit, what, options = {}) {
   return rateLimit({
     windowMs: minutes * 60_000,
     limit,
-    skipSuccessfulRequests: onlyFailures,
     message: message(what, minutes),
+    ...options,
   });
 }
 
-export function loginLimiter() {
-  return rateLimit({
-    windowMs: 15 * 60_000,
-    limit: 5,
-    skipSuccessfulRequests: true,
-    keyGenerator: req => {
-      const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
-      return `${ipKeyGenerator(req.ip)}|${email}`;
-    },
-    message: message('login attempts for this account', 15),
-  });
+export function loginLimiters() {
+  return [
+    ipLimiter(15, 20, 'failed logins from this network', { skipSuccessfulRequests: true }),
+    rateLimit({
+      windowMs: 15 * 60_000,
+      limit: 5,
+      skipSuccessfulRequests: true,
+      keyGenerator: req => `${ipKeyGenerator(req.ip)}|${emailOf(req)}`,
+      message: message('failed logins for this account', 15),
+    }),
+    rateLimit({
+      windowMs: 60 * 60_000,
+      limit: 20,
+      skipSuccessfulRequests: true,
+      keyGenerator: req => `account|${emailOf(req)}`,
+      message: message('failed logins for this account', 60),
+    }),
+  ];
 }

@@ -58,7 +58,10 @@ describe('logging in', () => {
 });
 
 describe('signing up', () => {
-  it('allows 20 new accounts per hour from one network (3 were made above)', async () => {
+  it('allows 20 new accounts per hour from one network (3 were made above), not counting failed tries', async () => {
+    for (let i = 0; i < 5; i += 1) {
+      expect((await request(app).post('/api/auth/signup').send({ email: 'bad' })).status).toBe(400);
+    }
     const codes = [];
     for (let i = 0; i < 17; i += 1) {
       codes.push((await request(app).post('/api/auth/signup').send({ name: `User ${i}`, email: `user${i}@test.com`, password: 'password123' })).status);
@@ -66,5 +69,21 @@ describe('signing up', () => {
     expect(codes.every(code => code === 201)).toBe(true);
     const blocked = await request(app).post('/api/auth/signup').send({ name: 'One more', email: 'more@test.com', password: 'password123' });
     expect(blocked.status).toBe(429);
+  });
+});
+
+describe('one account attacked from many networks', () => {
+  it('stops after 20 failed logins in an hour, wherever they come from', async () => {
+    app.set('trust proxy', 1);
+    const from = i => `203.0.113.${i}`;
+    for (let i = 1; i <= 20; i += 1) {
+      const res = await request(app).post('/api/auth/login').set('X-Forwarded-For', from(i)).send({ email: 'carol@test.com', password: 'guess' });
+      expect(res.status).toBe(401);
+    }
+    const blocked = await request(app).post('/api/auth/login').set('X-Forwarded-For', from(21)).send({ email: 'carol@test.com', password: 'guess' });
+    expect(blocked.status).toBe(429);
+    const other = await request(app).post('/api/auth/login').set('X-Forwarded-For', from(22)).send({ email: 'bob@test.com', password: 'password123' });
+    expect(other.status).toBe(200);
+    app.set('trust proxy', false);
   });
 });

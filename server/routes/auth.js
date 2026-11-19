@@ -7,7 +7,7 @@ import { ipLimiter } from '../middleware/limits.js';
 
 const authRouter = express.Router();
 
-const signupLimiter = ipLimiter(60, 20, 'new accounts from this network');
+const signupLimiter = ipLimiter(60, 20, 'new accounts from this network', { skipFailedRequests: true });
 
 authRouter.post('/signup', signupLimiter, validate(SignupInput), async (req, res) => {
   const { name, email, password } = req.body;
