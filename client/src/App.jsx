@@ -8,6 +8,7 @@ import NewOutingPage from './pages/NewOutingPage.jsx';
 import OutingPage from './pages/OutingPage.jsx';
 import EditOutingPage from './pages/EditOutingPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
+import IdeaPage from './pages/IdeaPage.jsx';
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/outings/new" element={<NewOutingPage />} />
           <Route path="/outings/:id" element={<OutingPage />} />
           <Route path="/outings/:id/edit" element={<EditOutingPage />} />
+          <Route path="/ideas/:slug" element={<IdeaPage />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFoundPage />} />

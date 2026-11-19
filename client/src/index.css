@@ -509,13 +509,8 @@ a.card:hover {
   flex: 1;
 }
 
-.idea .button,
 .idea .activity-tag {
   align-self: flex-start;
-}
-
-.idea .button {
-  margin-top: auto;
 }
 
 .card-cta {
@@ -940,6 +935,10 @@ textarea {
     align-items: start;
   }
 
+  .outing-column:last-child .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .auth {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -957,5 +956,98 @@ textarea {
   .hero {
     animation: none;
     transition: none;
+  }
+}
+
+.gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gallery-main {
+  display: block;
+  width: 100%;
+  height: 14rem;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--sand);
+}
+
+.gallery .small {
+  margin: 0;
+}
+
+.gallery-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.thumb {
+  padding: 0;
+  border: 3px solid transparent;
+  border-radius: 10px;
+  background: none;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.thumb img {
+  display: block;
+  width: 5.5rem;
+  height: 3.75rem;
+  object-fit: cover;
+}
+
+.thumb-active {
+  border-color: var(--clay);
+}
+
+.tips {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.tips li + li {
+  margin-top: 0.375rem;
+}
+
+.stops {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.stops li + li {
+  margin-top: 1rem;
+}
+
+.stops p {
+  margin: 0.25rem 0;
+  color: var(--muted);
+}
+
+.idea-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.card-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.card-title a:hover {
+  color: var(--accent);
+}
+
+@media (min-width: 640px) {
+  .gallery-main {
+    height: 24rem;
   }
 }

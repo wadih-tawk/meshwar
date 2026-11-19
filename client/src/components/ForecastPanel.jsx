@@ -2,11 +2,11 @@ import { getVerdict } from '../utils/verdict.js';
 import { availableFrom, formatDate } from '../utils/dates.js';
 import { describeWeather, formatPercent, formatTemp, formatWind } from '../utils/format.js';
 
-export default function ForecastPanel({ date, timing, forecast, error, loading, retry }) {
+export default function ForecastPanel({ title = 'Forecast', date, timing, forecast, error, loading, retry }) {
   if (timing === 'past') {
     return (
       <section className="panel">
-        <h2>Forecast</h2>
+        <h2>{title}</h2>
         <p className="muted">This outing is in the past, so there is no forecast to show.</p>
       </section>
     );
@@ -15,7 +15,7 @@ export default function ForecastPanel({ date, timing, forecast, error, loading, 
   if (timing === 'later') {
     return (
       <section className="panel">
-        <h2>Forecast</h2>
+        <h2>{title}</h2>
         <p className="muted">Forecast available from {formatDate(availableFrom(date))}.</p>
         <p className="small">Forecasts only reach two weeks ahead.</p>
       </section>
@@ -25,7 +25,7 @@ export default function ForecastPanel({ date, timing, forecast, error, loading, 
   if (error && !loading) {
     return (
       <section className="panel">
-        <h2>Forecast</h2>
+        <h2>{title}</h2>
         <p className="error" role="alert">
           {error.message}
         </p>
@@ -39,7 +39,7 @@ export default function ForecastPanel({ date, timing, forecast, error, loading, 
   if (loading || !forecast) {
     return (
       <section className="panel">
-        <h2>Forecast</h2>
+        <h2>{title}</h2>
         <p className="muted">Loading the forecast…</p>
       </section>
     );
@@ -50,7 +50,7 @@ export default function ForecastPanel({ date, timing, forecast, error, loading, 
 
   return (
     <section className="panel">
-      <h2>Forecast</h2>
+      <h2>{title}</h2>
       {weather && (
         <p className="weather-line">
           <span className="weather-icon">{weather.icon}</span> {weather.label}

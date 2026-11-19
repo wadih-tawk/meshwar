@@ -16,7 +16,8 @@ A weather-aware outing planner for students in Lebanon. Save a hike, a beach day
 - **My outings:** only your own outings, upcoming ones sorted by date, past ones in their own section.
 - **Outing page:** that day's forecast (min and max °C, rain chance, wind) and the verdict. The forecast covers today and the next 14 days; later dates show "Forecast available from <date>". If the weather service has not finished a day's forecast, the app says so instead of guessing a verdict.
 - **Photos and place info:** every outing shows a photo of its place and a short "About" text from Wikipedia, plus up to four sights nearby to explore (castles, temples, ski areas, valleys…). When Wikipedia has no photo, the app shows a photo for the activity.
-- **Home page:** a greeting by name, the next outing with a countdown ("In 3 days"), and **ideas for your next outing**: eight places around Lebanon with a photo, a short description and this Saturday's forecast. **Plan an outing here** opens the form already filled in.
+- **Home page:** a greeting by name, the next outing with a countdown ("In 3 days"), and **ideas for your next outing**: fourteen places around Lebanon with a photo, a short description and this Saturday's forecast. **Plan an outing here** opens the form already filled in.
+- **Idea pages** (`/ideas/...`): a photo gallery, what the place is, what to do, where to eat or stay, stops with directions (for the Bekaa wine trail), tips, this Saturday's forecast and a map. New places include the MIM Mineral Museum, Zaitunay Bay, Our Lady of Lebanon in Harissa, the National Museum of Beirut, Beirut Souks and a wine day in the Bekaa (Château Ksara, Massaya, Château Héritage, Domaine de Taanayel; staying at Chtaura Park Hotel or Massabki Hotel).
 - **Place search as you type:** matches appear after a short pause, places in Lebanon first; use the arrow keys and Enter, or click.
 - **Getting there:** each outing shows a Google map of the place. **Show the route from where I am** asks the browser for your location and draws the route by car; **Open in Google Maps** opens the directions in Google Maps.
 - **Packing checklist** on each outing: items for the activity, plus a warm jacket when it will be cold and an umbrella when rain is likely. Ticked items are remembered in the browser.
@@ -226,6 +227,7 @@ GitHub Actions runs both suites on every push (`.github/workflows/ci.yml`).
 ## Photos and texts
 
 - Place photos and the short descriptions come from **Wikipedia** (text under CC BY-SA 4.0; each photo keeps the license of its Wikimedia Commons file). The outing page links to the article.
+- The idea pages show photos from **Wikimedia Commons**, chosen by hand. Each photo shows its author and license under it, with a link to its Commons page; the list is in `client/src/utils/suggestions.js`. Opening hours and prices are left out on purpose because they change; the pages say to check before going.
 - When Wikipedia has no photo of a place, the app shows a photo for the activity. These six files are in `client/public/photos/`, taken from Wikimedia Commons and resized to 960 px:
 
 | File | Photo | Author | License |
