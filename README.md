@@ -4,8 +4,8 @@ A weather-aware outing planner for students in Lebanon. Save a hike, a beach day
 
 > The first proposal spelled the name "Mishwar". It is the same project.
 
-**Live app:** _coming with Milestone 4_
-**Live API:** _coming with Milestone 4_ (health check: `/api/health`)
+**Live app:** https://meshwar-rho.vercel.app
+**Live API:** https://meshwar-api-l824.onrender.com (health check: https://meshwar-api-l824.onrender.com/api/health). The API runs on Render's free tier, which sleeps after 15 idle minutes, so the first request can take up to a minute.
 
 **Team:** Wadih Tawk, Alex Achkar, Raymond El-Helou
 
